@@ -97,7 +97,7 @@ void vPrintArray(double *dArray) {
 }
 
 void vCopyArray(int iMyId) {
-    int i;
+    int volatile i;
 
     //: compute bounds for thread
     int iStart = iMyId * iSize / iNumThreads;
