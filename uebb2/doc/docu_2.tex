@@ -68,6 +68,31 @@ development.
 %%%%%%%%
 
 \section{Experiment: Pointer Chasing Benchmark}
+In figure \ref{pointer_chasing_local} and %TODO insert remote pointer chasing figure
+you can see the pointer chasing benchmark's result on a home pc and on \emph{moore}
+respectively. For low array sizes up to $2^{16}$ Bytes on the home pc the loading times
+are very low, which shows us that the problem fits completely in the L1 cache. Thus the
+L1 Cache seems to have 65 kB. The line with an array size of $2^{20}$ Bytes raises
+up at a stride of $2^8$ Bytes, because at this point we have a saturation in
+L1 and L2 caches. This fits well to the processor's data as it has four
+L2 caches with 256 kB each ($2^{20}\approx 1048$ kB). When the lines up to
+array sizes of $2^20$ Bytes drop down at a stride of $2^15$ Bytes we see
+the L1 associativity. The bigger array sizes up to $2^{23}$ Bytes drop
+down at a stride of $2^{20}$ Bytes due to L2 cache associativity.
+For the three biggest array sizes we see a raise in loading time at a stride of
+$2^16$ Bytes, because of increasing saturation of TLB misses. This indicates roughly
+a page size of $2^{17}$ Bytes. The discussion of \emph{moore's} pointer chasing benchmark
+as analog.
+
+
+
+\begin{figure}
+	\input{../part2_2/pointer_chasing.pgf}
+	\label{pointer_chasing_local}
+	\caption{Local pointer chasing Benchmark on home computer. The lines' colors indicate the
+	         used arrays' sizes in Bytes. The system's processor was an Intel i5-760 with 
+			 4 cores at 2.8 GHz and a L3 cache size of 8792 kB.}
+\end{figure}
 
 %%%%%%%
 % PART 3

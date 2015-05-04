@@ -17,9 +17,9 @@
 CPP=g++
 CFLAGS = -pthread
 
-mtlb :
-	$(CPP) $(CFLAGS)	src/mtlb_pthreads.cpp \
-						-o mtlb
+mtlb: ./src/mtlb_pthreads.cpp
+	$(CPP) $(CFLAGS)	src/mtlb_pthreads.cpp -o mtlb
 
+.PHONY: clean
 clean :
 	rm -f mtlb
