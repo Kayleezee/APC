@@ -164,8 +164,8 @@ int main(int argc, char *argv[]) {
     printf("#==============================================================\n#\n");
     printf("# MULTI-THREAD LOAD BANDWIDTH (Parallel POSIX Threads Version) \n#\n");
     printf("#--------------------------------------------------------------\n#\n");
-    printf("# Time needed:             %.5lf s \n", dTime);
-    printf("# Bytes  per second:       %.5lf \n", 1. * iSize * sizeof(double) / dTime);
+    printf("# time %.5lf s\n", dTime);
+    printf("# bandwidth %.5lf bytes/s\n", 1. * iSize * sizeof(double) / dTime);
     printf("# kBytes per second:       %.5lf \n", 1. * iSize * sizeof(double) / (dTime * KB));
     printf("# MBytes per second:       %.5lf \n", 1. * iSize * sizeof(double) / (dTime * MB));
     printf("# GBytes per second:       %.5lf \n", 1. * iSize * sizeof(double) / (dTime * GB));
