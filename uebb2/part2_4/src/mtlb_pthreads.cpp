@@ -27,7 +27,6 @@
 int iNumThreads;
 int iSize;
 double *dArrayA;
-double *dArrayB;
 
 /*************************************************************************************************
 * HANDLING HEADER
@@ -35,7 +34,7 @@ double *dArrayB;
 void vPrintUsage() {
     printf("\nUsage:\n\n./mtlb\n"
             "\n\t<S: size of array>"
-            "\n\t<T: number of threads>");
+            "\n\t<T: number of threads>\n");
 }
 
 /*************************************************************************************************
@@ -74,20 +73,6 @@ double *dAllocArrayA() {
     return dValues;
 }
 
-double *dAllocArrayB() {
-    int i;
-    double *dValues;
-
-    //: allocate values
-    dValues = (double *) malloc (iSize * sizeof(double));
-
-    for(i = 0; i < iSize; i++) {
-        dValues[i] = 0.0;
-    }
-
-    return dValues;
-}
-
 void vPrintArray(double *dArray) {
     int i;
 
@@ -96,23 +81,24 @@ void vPrintArray(double *dArray) {
     }
 }
 
-void vCopyArray(int iMyId) {
-    int volatile i;
+void vPullArray(int iMyId) {
+    int i;
+	volatile double temp;
 
     //: compute bounds for thread
     int iStart = iMyId * iSize / iNumThreads;
     int iEnd = (iMyId + 1) * (iSize / iNumThreads);
 
-    //: copy elements
+    //: get data from main memory
     for (i = iStart; i <= iEnd; i++) {
-        dArrayB[i] = dArrayA[i];
+        temp = dArrayA[i];
     }
 }
 
 void *vWorker(void *arg) {
     int iMyId = *((int *) arg);
 
-    vCopyArray(iMyId);
+    vPullArray(iMyId);
 
     return NULL;
 }
@@ -138,13 +124,11 @@ int main(int argc, char *argv[]) {
 
     iSize         = atoi(argv[1]);
     iNumThreads   = atoi(argv[2]);
-
+	
     dArrayA = dAllocArrayA();
-    dArrayB = dAllocArrayB();
 
-    //:
     threads = (pthread_t *) malloc(iNumThreads * sizeof(pthread_t));
-
+	
     dStart = dStartMeasurement();
 
     // Create threads
@@ -159,7 +143,7 @@ int main(int argc, char *argv[]) {
     }
 
     dTime = dStopMeasurement(dStart);
-
+	
     printf("\n");
     printf("#==============================================================\n#\n");
     printf("# MULTI-THREAD LOAD BANDWIDTH (Parallel POSIX Threads Version) \n#\n");
