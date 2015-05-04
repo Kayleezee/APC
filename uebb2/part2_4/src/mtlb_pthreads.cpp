@@ -171,6 +171,7 @@ int main(int argc, char *argv[]) {
     printf("# GBytes per second:       %.5lf \n", 1. * iSize * sizeof(double) / (dTime * GB));
     printf("#\n#==============================================================\n\n");
 
+	pthread_exit(NULL);
     return EXIT_SUCCESS;
 }
 
