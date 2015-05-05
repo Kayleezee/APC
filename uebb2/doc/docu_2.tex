@@ -41,6 +41,24 @@
 %%%%%%%%
 
 \section{Review: The Future of Microprocessors}
+The paper 'The Future of Microprocessors' from Kunle Ulukotun and Lance Hammond published
+in September 2005 deals with the expected trend from Von-Neumann architectures to
+Chip-Multiprocessor (CMP) design.
+
+ In the first part the authors explain that the
+uniprocessor developement reaches it's limits, because economic improvements
+in power consumption, pipelining and superscalar issues are no longer realizable.
+Therefore the only way to to keep performance increasing is to parallelize
+the architectures. This seems to work well for server systems, as they have
+to deal with parallel incoming user requests, but software developer still have to
+adjust their code to the emerging parallel computer architectures.
+
+The authors outline that a CMP design is beneficial, as inter thread communication
+is faster and less power hungry. 
+
+To our mind this paper describes the expected developement qualitatively in o good way.
+As CMP designs are actually in our every day life the authors' prediction was correct,
+which makes us accepting this paper.
 
 \section{Review: Software and the Concurrency Revolution}
 In their 2005 released paper "Software and the Concurrency Revolution" Sutter 
@@ -91,13 +109,15 @@ as analog.
 	\label{pointer_chasing_local}
 	\caption{Local pointer chasing Benchmark on home computer. The lines' colors indicate the
 	         used arrays' sizes in Bytes. The system's processor was an Intel i5-760 with 
-			 4 cores at 2.8 GHz and a L3 cache size of 8792 kB.}
+			 4 cores at 2.8 GHz and a L3 cache size of 8792 kB. Due to rounding errors
+			 some loading times are negative.}
 \end{figure}
 \begin{figure}
 	\input{../part2_2/pointer_chasing_remote.pgf}
 	\label{pointer_chasing_remote}
-	\caption{Local pointer chasing Benchmark on \emph{moore}. The lines' colors indicate the
-	         used arrays' sizes in Bytes.} 
+	\caption{Pointer chasing Benchmark on \emph{moore}. The lines' colors indicate the
+	         used arrays' sizes in Bytes. Some lines are of an unequal length as
+			 the \texttt{ssh} connection to \emph{moore} broke during the experiment.} 
 \end{figure}
 %%%%%%%
 % PART 3

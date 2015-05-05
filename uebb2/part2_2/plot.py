@@ -20,7 +20,7 @@ mp.rcParams.update(pdf_with_custom_preamble)
 mp.use("pgf")
 import matplotlib.pyplot as plt
 
-f = open("./data_local.csv", "r")
+f = open("./data_remote.csv", "r")
 reader = csv.reader(f, skipinitialspace=True, delimiter="\t")
 reader.next() ## skip header ##
 
@@ -59,4 +59,4 @@ ax.set_xscale("log", basex=2)
 ax.grid()
 ax.legend(bbox_to_anchor=(1.05, 1.1), loc=2, borderaxespad=0.)
 fig.subplots_adjust(right= 0.8)
-fig.savefig("pointer_chasing.pgf")
+fig.savefig("pointer_chasing_remote.pgf")
