@@ -1,12 +1,12 @@
 #*************************************************************************************************
 #
-# Heidelberg University - APC Exercise 02
+# Heidelberg University - APC Exercise 03
 #
 # Group :       APC03
 # Participant : Christoph Klein
 #               Klaus Naumann
 #
-# File :        mtlb_pthreads.c
+# File :        shared_counter_pthreads.c
 #
 # Purpose :     MULTI-THREAD LOAD BANDWIDTH (Parallel POSIX Threads Version)
 #
@@ -17,9 +17,9 @@
 CPP=g++
 CFLAGS = -pthread
 
-mtlb: ./src/mtlb_pthreads.cpp
-	$(CPP) $(CFLAGS)	src/mtlb_pthreads.cpp -o mtlb
+mtlb: ./src/shared_counter_pthreads.cpp
+	$(CPP) $(CFLAGS)	src/shared_counter_pthreads.cpp -o sc
 
 .PHONY: clean
 clean :
-	rm -f mtlb
+	rm -f sc

@@ -1,16 +1,16 @@
 /*************************************************************************************************
 *
-* Heidelberg University - APC Exercise 02
+* Heidelberg University - APC Exercise 03
 *
 * Group :       APC03
 * Participant : Christoph Klein
 *               Klaus Naumann
 *
-* File :        mtlb_pthreads.c
+* File :        shared_counter_pthreads.cpp
 *
-* Purpose :     MULTI-THREAD LOAD BANDWIDTH (Parallel POSIX Threads Version)
+* Purpose :     SHARED COUNTER (Parallel POSIX Threads Version)
 *
-* Last Change : 28. April 2015
+* Last Change : 05. Mai 2015
 *
 *************************************************************************************************/
 #include <stdio.h>
@@ -19,21 +19,23 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-#define KB 1024
-#define MB 1024 * 1024
-#define GB 1024 * 1024 * 1024
-
 //: define global variables
 int iNumThreads;
-int iSize;
-double *dArrayA;
+int iC;
+volatile int iCounter = 0;
+
+//: define shared barrier
+pthread_barrier_t barrier;
+
+//: define shared mutex
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /*************************************************************************************************
 * HANDLING HEADER
 *************************************************************************************************/
 void vPrintUsage() {
     printf("\nUsage:\n\n./mtlb\n"
-            "\n\t<S: size of array>"
+            "\n\t<C: number of increments>"
             "\n\t<T: number of threads>\n");
 }
 
@@ -57,48 +59,24 @@ double dStopMeasurement(double dStartTime)
 }
 
 /*************************************************************************************************
-* ARRAY HANDLING HEADER
+* THREAD HEADER
 *************************************************************************************************/
-double *dAllocArrayA() {
-    int i;
-    double *dValues;
+void vIncCounter(int iMyId) {
 
-    //: allocate values
-    dValues = (double *) malloc (iSize * sizeof(double));
-
-    for(i = 0; i < iSize; i++) {
-        dValues[i] = i;
-    }
-
-    return dValues;
-}
-
-void vPrintArray(double *dArray) {
-    int i;
-
-    for(i = 0; i < 8; i++) {
-        printf("%lf ",  dArray[i]);
-    }
-}
-
-void vPullArray(int iMyId) {
-    int i;
-	volatile double temp;
-
-    //: compute bounds for thread
-    int iStart = iMyId * iSize / iNumThreads;
-    int iEnd = (iMyId + 1) * (iSize / iNumThreads);
-
-    //: get data from main memory
-    for (i = iStart; i <= iEnd; i++) {
-        temp = dArrayA[i];
+    //: increment counter
+    pthread_barrier_wait(&barrier);
+    for(int i = 0; i < (iC/iNumThreads); i++) {
+        pthread_mutex_lock(&mutex);
+        iCounter += 1;
+        pthread_mutex_unlock(&mutex);
+        //printf("\nThread No. %d set counter to: %d", iMyId, iCounter);
     }
 }
 
 void *vWorker(void *arg) {
     int iMyId = *((int *) arg);
 
-    vPullArray(iMyId);
+    vIncCounter(iMyId);
 
     return NULL;
 }
@@ -113,8 +91,7 @@ int main(int argc, char *argv[]) {
     double dStart = 0.0;
     double dTime = 0.0;
 
-    double dBandWidth = 0.0;
-
+    //: pthreads init
     pthread_t *threads;
 
     if (argc != 3) {
@@ -122,40 +99,46 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    iSize         = atoi(argv[1]);
-    iNumThreads   = atoi(argv[2]);
-	
-    dArrayA = dAllocArrayA();
+    iC          = atoi(argv[1]);
+    iNumThreads = atoi(argv[2]);
+
+    //: barrier init
+    if(pthread_barrier_init(&barrier, NULL, iNumThreads)) {
+        printf("\nERROR: Could not initialize barrier!");
+        return EXIT_FAILURE;
+    }
+
+    //: mutex init
+    if(pthread_mutex_init(&mutex, NULL)) {
+        printf("\nError: Could not initialize mutex!");
+        return EXIT_FAILURE;
+    }
 
     threads = (pthread_t *) malloc(iNumThreads * sizeof(pthread_t));
-	
+
     dStart = dStartMeasurement();
 
     // Create threads
     for (i = 0; i < iNumThreads; i++) {
         p = (int *) malloc(sizeof(int));
         *p = i;
-        pthread_create(&threads[i], NULL, vWorker, (void *)(p));
+        if(pthread_create(&threads[i], NULL, vWorker, (void *)(p))) {
+            printf("\nERROR: Could not create thread");
+        }
     }
 
     for (i = 0; i < iNumThreads; i++) {
         pthread_join(threads[i], NULL);
     }
 
-    dTime = dStopMeasurement(dStart);
-	
-    printf("\n");
-    printf("#==============================================================\n#\n");
-    printf("# MULTI-THREAD LOAD BANDWIDTH (Parallel POSIX Threads Version) \n#\n");
-    printf("#--------------------------------------------------------------\n#\n");
-    printf("# time %.5lf s\n", dTime);
-    printf("# bandwidth %.5lf bytes/s\n", 1. * iSize * sizeof(double) / dTime);
-    printf("# kBytes per second:       %.5lf \n", 1. * iSize * sizeof(double) / (dTime * KB));
-    printf("# MBytes per second:       %.5lf \n", 1. * iSize * sizeof(double) / (dTime * MB));
-    printf("# GBytes per second:       %.5lf \n", 1. * iSize * sizeof(double) / (dTime * GB));
-    printf("#\n#==============================================================\n\n");
+    pthread_mutex_destroy(&mutex);
 
-	pthread_exit(NULL);
+    dTime = dStopMeasurement(dStart);
+
+    printf("\niCounter: %d", iCounter);
+    printf("\n");
+    pthread_exit(NULL);
+
     return EXIT_SUCCESS;
 }
 
