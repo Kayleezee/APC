@@ -41,9 +41,48 @@
 %%%%%%%
 
 \section{Review: Cost-Effective Parallel Computing}
+The paper "Cost-Effective Parallel Computing" from David A. Wood and 
+Mark D. Hill published in February 1995 deals with the authors thesis
+that parallel computing can be cost-effective even when speed-ups are
+non-linear in comparison to uniprocessor systems. The prerequisite of 
+the authors claim is the significant fraction of memory cost compared
+to system cost.
+\\
+In order to take advantage of the efficiency, capacity and bandwidth 
+of a large and expensive memory unit several processors are needed.
+Cost-effectivity increase especially in cases when speedups exceed 
+costups ($\frac{costs(parallel)}{costs(uniprocessor)}$). To further
+maximize the benefits of parallel systems software development costs
+for parallalizing applications should be taken under control.
+\\
+In our view the result of the authors work is correct. Especially for
+large computational problems parallel systems are far more cost-effective
+than uniprocessor systems.
 
 \section{Review: A Survey of Cache Coherence Schemes for Multiprocessor}
-      
+The paper "A Survey of Cache Coherence Schemes for Multiprocessor" from
+Per Stenström released in June 1990 outlines three problems of a shared-
+memory multiprocessor: the memory module handling only one request at 
+a time, communication contention and latency time which is long because 
+of the complexity of the interconnection network. As these problems 
+increase memory access time and therefore slow-down the execution, cache 
+memory served as a good way to reduce memory acces time. To maintain 
+cache coherence in memory the author inspects different possibile 
+implemetations: software based, hardware based or a combination of both.
+\\
+The survey outlines the following hardware based solutions: the 
+write-invalidate scheme (when a processor updates a block, all other 
+copies set to invalid) and the write-update policy (all copies get updated). 
+As software based solutions cache coherence can be realized by indiscriminate 
+or selective invalidation or based on timestamps with the aim to avoid 
+complex hardware mechanisms. Unfortunately apart from the write-invalidate 
+and write-update snoopy protocols none of the other solutions were 
+implemented. 
+\\
+Cache coherence is still a hot topic in parallel systems. Though snoopy
+or directoy-based protocols are the most common solution for cache coherence, 
+the Dekker's Algorithm is a software based attempt to maintain cache coherence.
+    
 %%%%%%%
 % PART 2 - Experiments
 %%%%%%%
