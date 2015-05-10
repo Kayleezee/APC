@@ -20,12 +20,16 @@
 #include <pthread.h>
 
 //: define global variables
+int iMode;
 int iNumThreads;
 int iC;
 volatile int iCounter = 0;
 
 //: define shared barrier
 pthread_barrier_t barrier;
+
+//: define shared rw_lock
+
 
 //: define shared mutex
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -36,7 +40,8 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 void vPrintUsage() {
     printf("\nUsage:\n\n./mtlb\n"
             "\n\t<C: number of increments>"
-            "\n\t<T: number of threads>\n");
+            "\n\t<T: number of threads>"
+            "\n\t<M: mode [0: MUTEX | 1: ATOMIC | 2: LOCK_RMW]\n");
 }
 
 /*************************************************************************************************
@@ -63,14 +68,25 @@ double dStopMeasurement(double dStartTime)
 *************************************************************************************************/
 void vIncCounter(int iMyId) {
 
-    //: increment counter
     pthread_barrier_wait(&barrier);
-    for(int i = 0; i < (iC/iNumThreads); i++) {
-        pthread_mutex_lock(&mutex);
-        iCounter += 1;
-        pthread_mutex_unlock(&mutex);
-        //printf("\nThread No. %d set counter to: %d", iMyId, iCounter);
+    if (iMode == 0) {
+        //: increment counter MUTEX
+        for (int i = 0; i < (iC/iNumThreads); i++) {
+            pthread_mutex_lock(&mutex);
+            iCounter += 1;
+            pthread_mutex_unlock(&mutex);
+        }
     }
+    else if (iMode == 1) {
+        //: increment counter ATOMIC
+        for (int i = 0; i < (iC/iNumThreads); i++) {
+            __sync_add_and_fetch(&iCounter, 1);
+        }
+    }
+    else if (iMode == 2) {
+
+    }
+
 }
 
 void *vWorker(void *arg) {
@@ -94,13 +110,14 @@ int main(int argc, char *argv[]) {
     //: pthreads init
     pthread_t *threads;
 
-    if (argc != 3) {
+    if (argc != 4) {
         vPrintUsage();
         return EXIT_FAILURE;
     }
 
     iC          = atoi(argv[1]);
     iNumThreads = atoi(argv[2]);
+    iMode       = atoi(argv[3]);
 
     //: barrier init
     if(pthread_barrier_init(&barrier, NULL, iNumThreads)) {

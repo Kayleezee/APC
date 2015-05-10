@@ -8,7 +8,7 @@
 #
 # File :        shared_counter_pthreads.c
 #
-# Purpose :     MULTI-THREAD LOAD BANDWIDTH (Parallel POSIX Threads Version)
+# Purpose :     SHARED COUNTER (Parallel POSIX Threads Version)
 #
 # Last Change : 28. April 2015
 #
