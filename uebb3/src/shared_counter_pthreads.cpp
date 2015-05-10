@@ -28,9 +28,6 @@ volatile int iCounter = 0;
 //: define shared barrier
 pthread_barrier_t barrier;
 
-//: define shared rw_lock
-
-
 //: define shared mutex
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
@@ -84,7 +81,7 @@ void vIncCounter(int iMyId) {
         }
     }
     else if (iMode == 2) {
-
+        //: increment counter LOCK_RMW
     }
 
 }
@@ -119,6 +116,11 @@ int main(int argc, char *argv[]) {
     iNumThreads = atoi(argv[2]);
     iMode       = atoi(argv[3]);
 
+    if (iMode > 2) {
+        vPrintUsage();
+        return EXIT_FAILURE;
+    }
+
     //: barrier init
     if(pthread_barrier_init(&barrier, NULL, iNumThreads)) {
         printf("\nERROR: Could not initialize barrier!");
@@ -148,14 +150,19 @@ int main(int argc, char *argv[]) {
         pthread_join(threads[i], NULL);
     }
 
-    pthread_mutex_destroy(&mutex);
-
     dTime = dStopMeasurement(dStart);
 
-    printf("\niCounter: %d", iCounter);
-    printf("\n");
+    pthread_mutex_destroy(&mutex);
+
+    printf("\n#==============================================================\n#");
+    printf("\n# SHARED COUNTER (Parallel POSIX Threads Version) \n#");
+    printf("\n#--------------------------------------------------------------\n#");
+    printf("\n# Final value (iCounter):       %d", iCounter);
+    printf("\n# Time needed (general):        %.5lf s", dTime);
+    printf("\n# Time needed (per increment):  %.8lf s", dTime/iCounter);
+    printf("\n#\n#==============================================================\n\n");
+
     pthread_exit(NULL);
 
     return EXIT_SUCCESS;
 }
-
