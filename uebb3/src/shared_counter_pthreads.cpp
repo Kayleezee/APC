@@ -18,11 +18,15 @@
 #include <sys/time.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <string>
+#define DEBUG false
 
 //: define global variables
 int iMode;
 int iNumThreads;
 int iC;
+int myLock = 0;
+std::string modes[3] = {"MUTEX", "ATOMIC", "LOCK_RMW"};
 volatile int iCounter = 0;
 
 //: define shared barrier
@@ -63,27 +67,51 @@ double dStopMeasurement(double dStartTime)
 /*************************************************************************************************
 * THREAD HEADER
 *************************************************************************************************/
+void lock_rmw(int id, int* lock) {
+	// One Thread checks the value of *lock permanently in the
+	//  while loop. If *lock == 1 the loop will be continued
+	//  and *lock = 1 will be done. Else *lock == 0 the loop
+	//  will be stopped, but *lock = 1 will be written 
+	//  before leaving the function.
+	if (DEBUG) printf("Thread%d: entered lock_rmw with *lock = %d\n", id, *lock);
+	while (__sync_lock_test_and_set(lock, 1)) {}
+}
+
+void unlock_rmw(int* lock) {
+	if (!lock) {
+		if (DEBUG) printf("ERROR: Thread tried to realease not locked mutex.\n");
+	}
+	__sync_lock_release(lock);
+
+}
+
 void vIncCounter(int iMyId) {
 
+	if (DEBUG) printf("Thread%d: entered vIncCounter\n",iMyId);
     pthread_barrier_wait(&barrier);
     if (iMode == 0) {
         //: increment counter MUTEX
-        for (int i = 0; i < (iC/iNumThreads); i++) {
+        for (int i = 0; i < (iC/iNumThreads); ++i) {
             pthread_mutex_lock(&mutex);
-            iCounter += 1;
+            ++iCounter;
             pthread_mutex_unlock(&mutex);
         }
     }
     else if (iMode == 1) {
         //: increment counter ATOMIC
-        for (int i = 0; i < (iC/iNumThreads); i++) {
+        for (int i = 0; i < (iC/iNumThreads); ++i) {
             __sync_add_and_fetch(&iCounter, 1);
         }
     }
     else if (iMode == 2) {
-        //: increment counter LOCK_RMW
+		//: increment counter LOCK_RMW
+		for (int i = 0; i < (iC/iNumThreads); ++i) {
+			if (DEBUG) printf("Thread%d: try to lock mutex\n",iMyId);
+			lock_rmw(iMyId, &myLock);
+			++iCounter;
+			unlock_rmw(&myLock);
+		}
     }
-
 }
 
 void *vWorker(void *arg) {
@@ -129,7 +157,7 @@ int main(int argc, char *argv[]) {
 
     //: mutex init
     if(pthread_mutex_init(&mutex, NULL)) {
-        printf("\nError: Could not initialize mutex!");
+        printf("\nERROR: Could not initialize mutex!");
         return EXIT_FAILURE;
     }
 
@@ -157,9 +185,12 @@ int main(int argc, char *argv[]) {
     printf("\n#==============================================================\n#");
     printf("\n# SHARED COUNTER (Parallel POSIX Threads Version) \n#");
     printf("\n#--------------------------------------------------------------\n#");
-    printf("\n# Final value (iCounter):       %d", iCounter);
-    printf("\n# Time needed (general):        %.5lf s", dTime);
-    printf("\n# Time needed (per increment):  %.8lf s", dTime/iCounter);
+    printf("\n# Mode               %s", modes[iMode].c_str());
+    printf("\n# thread_count       %d", iNumThreads);
+    printf("\n# iCounter           %d", iCounter);
+    printf("\n# time_total         %.5lf s", dTime);
+    printf("\n# updates_per_second %.2lf", ((double) iCounter)/dTime);
+    printf("\n# time_per_increment %.8lf s", dTime/iCounter);
     printf("\n#\n#==============================================================\n\n");
 
     pthread_exit(NULL);
