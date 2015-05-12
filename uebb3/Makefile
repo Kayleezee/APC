@@ -6,11 +6,11 @@
 # Participant : Christoph Klein
 #               Klaus Naumann
 #
-# File :        shared_counter_pthreads.c
+# File :        Makefile
 #
 # Purpose :     SHARED COUNTER (Parallel POSIX Threads Version)
 #
-# Last Change : 28. April 2015
+# Last Change : 11. Mai 2015
 #
 #*************************************************************************************************
 
