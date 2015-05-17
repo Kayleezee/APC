@@ -1,0 +1,111 @@
+% PREAMBLE
+%%%%%%%%%%
+%%%%%%%%%%
+
+\documentclass[oneside,a4paper]{scrartcl}
+
+% PACKAGES
+%%%%%%%%%%
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{pgf}
+\usepackage{placeins}
+\usepackage{listings}
+
+
+% DOCUMENT
+%%%%%%%%%%
+%%%%%%%%%%
+
+\begin{document}
+
+%%%%%%%
+% TITLE
+%%%%%%%
+
+\title{Exercise Sheet IV}
+\subject{Advanced Parallel Computing}
+\author{Klaus Naumann \& Christoph Klein}
+\maketitle
+
+%%%%%%%
+% TABLE OF CONTENTS
+%%%%%%%
+
+%\newpage
+%\tableofcontents
+%\newpage
+
+%%%%%%%
+% PART 1 - Reading
+%%%%%%%
+
+\section{Review: Efficient Synchronization: Let Them Eat QOLB}
+
+
+\section{Review: Efficient Support for Highly-Contended Locks in Many-Core CMPs}
+
+    
+%%%%%%%
+% PART 2 - Experiments
+%%%%%%%
+
+\section{Experiment: Shared Counter Performance Analysis}
+We performed the experiments for the shared counter performance
+analysis on \emph{moore} and on a home computer with an Intel
+i5 760 @ 2.80 GHz. You can see our results in figure \ref{plot}, \ref{plotbig},
+\ref{plotbigtotal} and \ref{plottotal}. We did two test series: the first
+one with $10^5$ and the second with $10^7$ counter increasements. You
+see clearly in figure \ref{plot} and \ref{plottotal} that the measured
+times are very unstable. We think this happened, because other effects
+dominated the time measurements. 
+
+In the other test series (figure \ref{plotbig} and \ref{plotbigtotal}) with
+$10^7$ counter increasements, you can see more stable results. The results
+in figure \ref{plotbigtotal} look like what we expected, as the total
+time does not increase significantly for increasing thread counts
+in case of ATOMIC and MUTEX tests.
+We expected that, as the communication between threads should be
+limited due to latency. Furthermore the relatively low measured total
+times for one or two threads is reasonable, because there is less
+communication necessary and the compuational intensity of every thread
+is nearly zero.
+
+That the time in figure \ref{plotbigtotal} increases for higher thread
+counts in case of LOCK\_RMW seems reasonable to us, as this experiment
+is executed with a self written mutex, which is based on atomic operations.
+Of course this self written mutex is not optimized on hardware level, thus
+leads to worse time measurements.
+
+All the aspects we discussed on the behaviour of the total time depending
+on the thread count can be transferred to the counter increasements
+depending on the thread count. You can see in figure \ref{plotbig} that
+we do not see new aspects, which are not already clear.
+
+\begin{figure}
+	\centering\input{../src/plot.pgf}
+	\caption{Experiments on \emph{moore} and on a local computer at home
+	with $10^5$ increasements in total.}
+	\label{plot}
+\end{figure}
+
+\begin{figure}
+	\centering\input{../src/plotbig.pgf}
+	\caption{Experiments on \emph{moore} and on a local computer at home
+	with $10^7$ increasements in total.}
+	\label{plotbig}
+\end{figure}
+
+\begin{figure}
+	\centering\input{../src/plotbigtotal.pgf}
+	\caption{Experiments on \emph{moore} and on a local computer at home
+	with $10^7$ increasements in total.}
+	\label{plotbigtotal}
+\end{figure}
+\begin{figure}
+	\centering\input{../src/plottotal.pgf}
+	\caption{Experiments on \emph{moore} and on a local computer at home
+	with $10^5$ increasements in total.}
+	\label{plottotal}
+\end{figure}
+\end{document}
