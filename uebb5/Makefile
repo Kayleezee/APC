@@ -15,7 +15,7 @@
 CPP = g++
 CFLAGS = -I./inc/ -std=c++11 -pthread 
 DEPS = ./inc/time_measurement.h 
-OBJ = ./src/main.o
+OBJ = ./src/main.o ./src/barrier.o
 
 .PHONY: build
 build: $(OBJ)

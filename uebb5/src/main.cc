@@ -83,7 +83,7 @@ int main (int argc, char* argv[]) {
 			exit(-1);
 		}
 	}
-	library_barrier((void *) &td[0]);
+	pthread_barrier((void *) &td[0]);
 	tm.stop("pthread");
 	test_barrier_count(td, thread_count);
 	reset_barrier_count(td, thread_count);

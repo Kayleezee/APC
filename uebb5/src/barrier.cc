@@ -16,7 +16,7 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
-
+#include <pthread.h>
 
 void* pthread_barrier(void* threadargs) {
 	struct thread_data* td;
@@ -25,7 +25,7 @@ void* pthread_barrier(void* threadargs) {
 	std::this_thread::sleep_for(std::chrono::seconds(td->wait));
 
 	for (int i = 0; i < td->n_barrier; ++i) {
-		pthreads_barrier_wait(td->shared_barrier);
+		pthread_barrier_wait(td->shared_barrier);
 		++(td->barrier_count);
 	}
 
@@ -35,7 +35,7 @@ void* pthread_barrier(void* threadargs) {
 }
 
 void* central_barrier(void* threadargs) {
-	struct thread_data td;
+	struct thread_data* td;
 	td = (struct thread_data *) threadargs;
 
 	std::this_thread::sleep_for(std::chrono::seconds(td->wait));
@@ -48,9 +48,12 @@ void* central_barrier(void* threadargs) {
 			*(td->shared_sense) = td->local_sense;
 		}
 		else {
-			while (*(td->sense) != td->local_sense);
+			while (*(td->shared_sense) != td->local_sense);
 		}
 	}
+	if (td->thread_id != 0) {
+			pthread_exit(NULL);
+		}
 }
 
 void test_barrier_count (struct thread_data* td, int thread_count) {
