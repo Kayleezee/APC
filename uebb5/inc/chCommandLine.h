@@ -46,6 +46,12 @@ chCommandLinePassback( int *p, char *s )
 }
 
 static void
+chCommandLinePassback( double *p, char *s )
+{
+    *p = atof( s );
+}
+
+static void
 chCommandLinePassback( char **p, char *s )
 {
     *p = s;
