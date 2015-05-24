@@ -17,7 +17,15 @@
 
 #include <pthread.h>
 
-struct thread_data {
+struct pthread_data {
+	int thread_id;
+	int barrier_count;
+	int wait;
+	pthread_barrier_t* shared_barrier;
+	int n_barrier;
+};
+
+struct central_data {
 	int thread_id;
 	int barrier_count;
 	int wait;
@@ -25,13 +33,35 @@ struct thread_data {
 	int* shared_counter;
 	bool local_sense;
 	int thread_count;
-	pthread_barrier_t* shared_barrier;
 	int n_barrier;
+};
+
+struct flag {
+	volatile bool me;
+	volatile bool* partner;
+	int partner_id;
+};
+
+struct dissemination_data {
+	int thread_count;
+	int thread_id;
+	int barrier_count;
+	int wait;
+	int n_barrier;
+	struct flag** fl;
+	bool sense;
+	int par;
 };
 
 void* pthread_barrier(void* threadargs); 
 void* central_barrier(void* threadargs);
-void reset_barrier_count(struct thread_data* td, int thread_count);
-void test_barrier_count(struct thread_data* td, int thread_count);
+void* dissemination_barrier(void* threadargs);
+
+void initialize_dissemination(struct dissemination_data* td, int thread_count);
+
+template <typename TD>
+void reset_barrier_count(TD* td, int thread_count);
+template <typename TD>
+void test_barrier_count(TD* td, int thread_count);
 
 #endif

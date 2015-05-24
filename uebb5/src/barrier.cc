@@ -17,10 +17,13 @@
 #include <chrono>
 #include <thread>
 #include <pthread.h>
+#include <cmath>
+
+extern pthread_mutex_t mut;
 
 void* pthread_barrier(void* threadargs) {
-	struct thread_data* td;
-	td = (struct thread_data *) threadargs;
+	struct pthread_data* td;
+	td = (struct pthread_data *) threadargs;
 	
 	std::this_thread::sleep_for(std::chrono::seconds(td->wait));
 
@@ -35,8 +38,8 @@ void* pthread_barrier(void* threadargs) {
 }
 
 void* central_barrier(void* threadargs) {
-	struct thread_data* td;
-	td = (struct thread_data *) threadargs;
+	struct central_data* td;
+	td = (struct central_data *) threadargs;
 
 	std::this_thread::sleep_for(std::chrono::seconds(td->wait));
 
@@ -56,7 +59,70 @@ void* central_barrier(void* threadargs) {
 		}
 }
 
-void test_barrier_count (struct thread_data* td, int thread_count) {
+void initialize_dissemination(struct dissemination_data* td, int thread_count) {
+	for (int i = 0; i < thread_count; ++i) {
+		td[i].fl = new struct flag*[(int) ceil(log2(thread_count))];
+		for (int r = 0; r < 2; ++r) {
+			for (int k = 0; k < log2(thread_count); ++k) {
+				td[i].fl[k] = new struct flag[2];
+			}
+		}
+	}
+	for (int i = 0; i < thread_count; ++i) {
+		td[i].sense = true;
+		for (int r = 0; r < 2; ++r) {
+			for (int k = 0; k < log2(thread_count); ++k) {
+				td[i].fl[k][r].me = false;
+				int j = (int) (1 + i + pow(k,2)) % thread_count;
+				td[i].fl[k][r].partner = &td[j].fl[k][r].me;
+				td[i].fl[k][r].partner_id = j;
+			}
+		}
+	}
+}
+
+void* dissemination_barrier(void* threadargs) {
+	struct dissemination_data* td = (struct dissemination_data *) threadargs;
+
+	std::this_thread::sleep_for(std::chrono::seconds(td->wait));
+
+/*	pthread_mutex_lock(&mut);
+	std::cout << "thread_id " << td->thread_id << std::endl
+		      << "\tn_barrier    " << td->n_barrier << std::endl
+		      << "\tthread_count " << td->thread_count << std::endl
+		      << "\twait         " << td->wait << std::endl
+		      << "\tsense        " << td->sense << std::endl
+		      << "\tpar          " << td->par << std::endl;
+
+	pthread_mutex_unlock(&mut);*/
+
+	for (int j = 0; j < td->n_barrier; ++j) {
+		for (int i = 0; i < log2(td->thread_count); ++i) {
+			struct flag* const f = &(td->fl[i][td->par]);
+			*f->partner = td->sense;
+//			pthread_mutex_lock(&mut);
+//			std::cout << "Thread " << td->thread_id << " sended message to thread "
+//				      << f->partner_id << std::endl;
+//			pthread_mutex_unlock(&mut);
+			while(f->me != td->sense);
+//			pthread_mutex_lock(&mut);
+//			std::cout << "Thread " << td->thread_id << " got message from thread " << std::endl;
+//			pthread_mutex_unlock(&mut);
+		}
+		++(td->barrier_count);
+		if (td->par == 1) {
+			td->sense = !td->sense;
+		}
+		td->par ^= 0x1;
+	}
+
+	if (td->thread_id != 0) {
+		pthread_exit(NULL);
+	}
+}
+
+template <typename TD>
+void test_barrier_count(TD* td, int thread_count) {
 
 	bool check = true;
 	for (int i = 0; i < thread_count; ++i) {
@@ -70,9 +136,18 @@ void test_barrier_count (struct thread_data* td, int thread_count) {
 	}
 }
 
-void reset_barrier_count (struct thread_data* td, int thread_count) {
+template <typename TD>
+void reset_barrier_count(TD* td, int thread_count) {
 	for (int i = 0; i < thread_count; ++i) {
 		td[i].barrier_count = 0;
 	}
 }
+
+// here you force the compiler to generate code for this types //
+template void test_barrier_count<struct pthread_data>(struct pthread_data*, int);
+template void test_barrier_count<struct central_data>(struct central_data*, int);
+template void test_barrier_count<struct dissemination_data>(struct dissemination_data*, int);
+template void reset_barrier_count<struct central_data>(struct central_data*, int);
+template void reset_barrier_count<struct pthread_data>(struct pthread_data*, int);
+template void reset_barrier_count<struct dissemination_data>(struct dissemination_data*, int);
 
