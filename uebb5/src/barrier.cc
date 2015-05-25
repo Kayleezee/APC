@@ -81,6 +81,36 @@ void initialize_dissemination(struct dissemination_data* td, int thread_count) {
 	}
 }
 
+void initialize_tree(struct tree_data* td, int thread_count) {
+	int start = 0;
+	int end = thread_count/2;
+	int odd = thread_count % 2;
+	int count = end - start;
+	struct node_t* p_node = new node_t[thread_count];
+
+	for (int i = 0; i < thread_count; ++i) {
+		td[i].node = &p_node[i/2];
+	}
+
+	while (count > 1) {
+		std::cout << "count = " << count << std::endl; 
+		for(int i = start; i < end; ++i) {
+			p_node[i].parent = &p_node[end + odd + (i - start)/2];
+			std::cout << "\tNode " << i << " gets parent " << end + odd + (i - start)/2 << std::endl; 
+		}
+		start = end;
+		end = start + count / 2;  
+		odd = (count/2 + odd) % 2;
+		count = end - start;
+	}
+
+	if (odd == 0) {
+		p_node[start].parent = &p_node[end+1];
+		p_node[end].parent = &p_node[end+1];
+	}
+
+}
+
 void* dissemination_barrier(void* threadargs) {
 	struct dissemination_data* td = (struct dissemination_data *) threadargs;
 

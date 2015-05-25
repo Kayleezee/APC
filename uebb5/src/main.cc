@@ -51,6 +51,7 @@ int main (int argc, char* argv[]) {
 
 	// initialize threads and their function arguments //
 	struct pthread_data* ptd = new struct pthread_data[thread_count];
+	struct tree_data* ttd = new struct tree_data[thread_count];
 	struct central_data* ctd = new struct central_data[thread_count];
 	struct dissemination_data* dtd = new struct dissemination_data[thread_count];
 	pthread_t* threads = new pthread_t[thread_count];
@@ -69,16 +70,21 @@ int main (int argc, char* argv[]) {
 		ptd[i].thread_id = i;
 		ctd[i].thread_id = i;
 		dtd[i].thread_id = i;
+		ttd[i].thread_id = i;
 		ptd[i].barrier_count = 0;
 		ctd[i].barrier_count = 0;
 		dtd[i].barrier_count = 0;
+		ttd[i].barrier_count = 0;
+		ttd[i].wait = 0;
 		ptd[i].wait = 0;
 		ctd[i].wait = 0;
 		dtd[i].wait = 0;
+		ttd[i].n_barrier = n_barrier;
 		ptd[i].n_barrier = n_barrier;
 		ctd[i].n_barrier = n_barrier;
 		dtd[i].n_barrier = n_barrier;
-
+		
+		ttd[i].thread_count = thread_count;
 		dtd[i].thread_count = thread_count;
 		dtd[i].par = 0;
 
@@ -89,17 +95,18 @@ int main (int argc, char* argv[]) {
 
 		ptd[i].shared_barrier = &barrier;
 	}
-	std::cout << "initialize_dissemination" << std::endl;
+//	std::cout << "initialize_dissemination" << std::endl;
 	initialize_dissemination(dtd, thread_count);
+	initialize_tree(ttd, thread_count);
 	ctd[1].wait = 1;	
 	ptd[1].wait = 1;
 	dtd[1].wait = 5;
-	for (int i = 0; i < thread_count; ++i) {
+/*	for (int i = 0; i < thread_count; ++i) {
 		std::cout << "Thread " << i << " has the following partners:" << std::endl;
 		for (int k = 0; k < log2(thread_count); ++k) {
 			std::cout << "\t" << dtd[i].fl[k][0].partner_id << std::endl;
 		}
-	}
+	}*/
 
 
 /*******************

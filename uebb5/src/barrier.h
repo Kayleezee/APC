@@ -53,11 +53,25 @@ struct dissemination_data {
 	int par;
 };
 
+struct node_t {
+	node_t* parent;
+};
+
+struct tree_data {
+	int thread_count;
+	int thread_id;
+	int barrier_count;
+	int wait;
+	int n_barrier;
+	node_t* node;
+};
+
 void* pthread_barrier(void* threadargs); 
 void* central_barrier(void* threadargs);
 void* dissemination_barrier(void* threadargs);
 
 void initialize_dissemination(struct dissemination_data* td, int thread_count);
+void initialize_tree(struct tree_data* td, int thread_count);
 
 template <typename TD>
 void reset_barrier_count(TD* td, int thread_count);
