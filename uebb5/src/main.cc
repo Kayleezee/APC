@@ -63,6 +63,7 @@ int main (int argc, char* argv[]) {
 	double pthread_barrier_per_second;
 	double central_barrier_per_second;
 	double dissemination_barrier_per_second;
+	double tree_barrier_per_second;
 	pthread_mutex_init(&mut, NULL);
 	TimeMeasurer tm;	
 	
@@ -85,6 +86,7 @@ int main (int argc, char* argv[]) {
 		dtd[i].n_barrier = n_barrier;
 		
 		ttd[i].thread_count = thread_count;
+		ttd[i].sense = true;	
 		dtd[i].thread_count = thread_count;
 		dtd[i].par = 0;
 
@@ -98,9 +100,6 @@ int main (int argc, char* argv[]) {
 //	std::cout << "initialize_dissemination" << std::endl;
 	initialize_dissemination(dtd, thread_count);
 	initialize_tree(ttd, thread_count);
-	ctd[1].wait = 1;	
-	ptd[1].wait = 1;
-	dtd[1].wait = 5;
 /*	for (int i = 0; i < thread_count; ++i) {
 		std::cout << "Thread " << i << " has the following partners:" << std::endl;
 		for (int k = 0; k < log2(thread_count); ++k) {
@@ -167,6 +166,25 @@ int main (int argc, char* argv[]) {
 	reset_barrier_count(dtd, thread_count);
 	dissemination_barrier_per_second = ((double) n_barrier) / tm.get_time("dissemination");
 
+/****************
+ * TREE BARRIER *
+ ****************/
+	std::cout << "I am going to test the tree barrier performance ..." << std::endl;
+	tm.start("tree");
+	for (int i = 1; i < thread_count; ++i) {
+		rc = pthread_create(&threads[i], NULL, tree_barrier, (void *) &ttd[i]);
+		if (rc) {
+			std::cout << "***ERROR: could not create thread for tree barrier" << std::endl;
+			exit(-1);
+		}
+	}
+	tree_barrier((void *) &ttd[0]);
+	tm.stop("tree");
+	std::this_thread::sleep_for(std::chrono::seconds(1));
+	test_barrier_count(ttd, thread_count);
+	reset_barrier_count(ttd, thread_count);
+	tree_barrier_per_second = ((double) n_barrier) / tm.get_time("tree");
+
 /************
  * FINALIZE *
  ************/
@@ -175,10 +193,13 @@ int main (int argc, char* argv[]) {
 		      << "\tthread_count " << thread_count << std::endl
 		      << "\tpthread_barrier_per_second " << pthread_barrier_per_second << std::endl
               << "\tcentral_barrier_per_second " << central_barrier_per_second << std::endl
-              << "\tdissemination_barrier_per_second " << dissemination_barrier_per_second << std::endl;
+              << "\tdissemination_barrier_per_second " << dissemination_barrier_per_second << std::endl
+              << "\ttree_barrier_per_second " << tree_barrier_per_second << std::endl;
 
 	delete[] ptd;
 	delete[] ctd;
+	delete[] dtd;
+	delete[] ttd;
 	delete[] threads;
 	
 	pthread_exit(NULL);

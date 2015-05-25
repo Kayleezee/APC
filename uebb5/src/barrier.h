@@ -54,6 +54,10 @@ struct dissemination_data {
 };
 
 struct node_t {
+	int id;
+	int k; // fan in of this node
+	int count;
+	volatile bool locksense;
 	node_t* parent;
 };
 
@@ -63,12 +67,15 @@ struct tree_data {
 	int barrier_count;
 	int wait;
 	int n_barrier;
+	bool sense;
 	node_t* node;
 };
 
 void* pthread_barrier(void* threadargs); 
 void* central_barrier(void* threadargs);
 void* dissemination_barrier(void* threadargs);
+void* tree_barrier(void* threadargs);
+void combining(struct node_t* pn, bool sense, int id);
 
 void initialize_dissemination(struct dissemination_data* td, int thread_count);
 void initialize_tree(struct tree_data* td, int thread_count);

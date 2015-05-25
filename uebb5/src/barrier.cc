@@ -18,6 +18,7 @@
 #include <thread>
 #include <pthread.h>
 #include <cmath>
+#include <queue>
 
 extern pthread_mutex_t mut;
 
@@ -82,33 +83,74 @@ void initialize_dissemination(struct dissemination_data* td, int thread_count) {
 }
 
 void initialize_tree(struct tree_data* td, int thread_count) {
-	int start = 0;
-	int end = thread_count/2;
-	int odd = thread_count % 2;
-	int count = end - start;
-	struct node_t* p_node = new node_t[thread_count];
+
+	struct node_t* p_node = new struct node_t[thread_count/2 + thread_count % 2];
+	struct node_t* p0;
+	struct node_t* p1;
+	std::queue<struct node_t*> nq;
+	int counter = 0;
+
+	for (int i = 0; i < thread_count/2 + thread_count % 2; ++i) {
+		p_node[i].id = counter;
+		p_node[i].k = 0;
+		p_node[i].locksense = false;
+		++counter;
+		nq.push(&p_node[i]);
+	}
 
 	for (int i = 0; i < thread_count; ++i) {
 		td[i].node = &p_node[i/2];
+		++p_node[i/2].k; 
+		p_node[i/2].count = p_node[i/2].k;
 	}
 
-	while (count > 1) {
-		std::cout << "count = " << count << std::endl; 
-		for(int i = start; i < end; ++i) {
-			p_node[i].parent = &p_node[end + odd + (i - start)/2];
-			std::cout << "\tNode " << i << " gets parent " << end + odd + (i - start)/2 << std::endl; 
+	while (nq.size() > 1) {
+		p0 = nq.front();
+		nq.pop();
+		p1 = nq.front();
+		nq.pop();
+		p_node = new struct node_t;
+		p_node->k = 2;
+		p_node->count = 2;
+		p_node->locksense = false;
+		p_node->id=counter;
+		++counter;
+//		std::cout << "node " << p0->id << " and " << p1->id << " get parent " << p_node->id << std::endl; 
+		p0->parent = p_node;
+		p1->parent = p_node;
+		nq.push(p_node);
+	}
+	p_node = nq.front();
+	p_node->parent = nullptr;
+}
+
+void* tree_barrier(void* threadargs) {
+	struct tree_data* td = (struct tree_data *) threadargs;
+
+	std::this_thread::sleep_for(std::chrono::seconds(td->wait));
+
+	for (int j = 0; j < td->n_barrier; ++j) {
+		combining(td->node, td->sense, td->thread_id);
+		td->sense = !td->sense;
+		++(td->barrier_count);
+	}
+}
+
+void combining(struct node_t* pn, bool sense, int id) {
+//	pthread_mutex_lock(&mut);
+//	std::cout << "Thread " << id << " arrived at node " << pn->id << std::endl;
+//	pthread_mutex_unlock(&mut);
+	if (__sync_fetch_and_sub(&pn->count, 1) == 1) {
+		if (pn->parent != nullptr) {
+//			pthread_mutex_lock(&mut);
+//			std::cout << "Thread " << id << " go for node " << pn->parent->id << std::endl;
+//			pthread_mutex_unlock(&mut);
+			combining(pn->parent, sense, id);
 		}
-		start = end;
-		end = start + count / 2;  
-		odd = (count/2 + odd) % 2;
-		count = end - start;
+		pn->count = pn->k;
+		pn->locksense = !pn->locksense;
 	}
-
-	if (odd == 0) {
-		p_node[start].parent = &p_node[end+1];
-		p_node[end].parent = &p_node[end+1];
-	}
-
+	while (pn->locksense != sense);
 }
 
 void* dissemination_barrier(void* threadargs) {
@@ -177,7 +219,9 @@ void reset_barrier_count(TD* td, int thread_count) {
 template void test_barrier_count<struct pthread_data>(struct pthread_data*, int);
 template void test_barrier_count<struct central_data>(struct central_data*, int);
 template void test_barrier_count<struct dissemination_data>(struct dissemination_data*, int);
+template void test_barrier_count<struct tree_data>(struct tree_data*, int);
 template void reset_barrier_count<struct central_data>(struct central_data*, int);
 template void reset_barrier_count<struct pthread_data>(struct pthread_data*, int);
 template void reset_barrier_count<struct dissemination_data>(struct dissemination_data*, int);
+template void reset_barrier_count<struct tree_data>(struct tree_data*, int);
 
