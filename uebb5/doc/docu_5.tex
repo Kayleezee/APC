@@ -27,6 +27,90 @@
 \subject{Advanced Parallel Computing}
 \author{Klaus Naumann \& Christoph Klein}
 \maketitle
+\section*{Exercise 1}
+\subsection*{first paper}
+The paper 'Inter-Block GPU Communication via Fast Barrier Synchronization' from
+Xiao and Feng 2010 proposes two GPU synchronization strategies, a performance
+model for kernel execution time and performance results for their synchronization
+strategies in widely used algorithms in comparison to the classic implicit block
+synchronization by the CPU.
 
+They present a lock and lock free based synchronization method, where the lock
+free method seems to be faster for 12 and more blocks running in a kernel, which
+is shown by their micro benchmark. This benchmark contains performance measurements
+for three algorithms: FFT, dynamic programming and bitonic sort.
+The authors emphazise the importance of improving inter block synchronization,
+as the relative time spent for it is about the total execution time's half.
 
+To our mind the statement of this paper contradicts to the principle of
+parallel slackness on GPUs. Due to this principle no inter block synchronization
+should be possible, because running blocks occupy hardware resources and can not be
+pushed away until they finish execution. This means they can not synchronize with blocks,
+which wait for hardware resources and thus are not in execution yet.
+This can only happen if there are more blocks in a kernel than hardware resources
+available. The authors do not point out this critical matter and used only low
+block counts ($\le 30$) in their performance analysis.
+
+\subsection*{second paper}
+The paper 'Fast Barrier Synchronization for InfiniBand\textsuperscript{TM}'
+by Hoefler et al. 2006 presents a fast MPI\_Barrier() operation, which exploits
+the hardware parallelism inside the InfiniBand\textsuperscript{TM} network.
+
+The MPI\_Barrier() is based on a dissemination barrier, where each thread
+communicates with another thread per step that he reached the barrier.
+Thus the whole barrier operation consists of $\log_2 P$ steps, where
+$P$ is the number of threads. Because of InfiniBand\textsuperscript{TM}'s hardware
+parallelism it is possible for threads to send more than one message per step
+to other threads, which raises the MPI\_Barrier() to a so called $n$-Way dissemination
+barrier.
+
+To our mind this paper provides a speedup for HPC applications without additional costs.
+Nevertheless the determination of the $n$ parameter is still empiric, thus
+for an appropriate value of $n$ one has to make perfomance tests.
+
+\section*{Exercise 2}
+
+We made measurements for the pthread built in barrier and
+our self written tree, central and dissemination barrier.
+The tree barrier is based on a binary tree, with atomic
+operations if two threads synchronize locally at a node.
+The central barrier we used matches the one explained in
+the lecture script. We took the dissemination barrier from
+Crummey and Scott 1991.
+
+You can see our results in table \ref{tab} and figure \ref{bar}.
+It is surprising that the pthreads barrier scales worst
+with the number of threads, although it is a standard
+library barrier. The central barrier takes less time,
+but you see that it grows faster with the number of
+threads in comparison to the dissemination or tree barrier.
+The latter two increases only slowly with an increasing
+number of threads and shows the best performance results
+of the tested barriers. By eye you can not determine
+a significant performance gap between the tree and
+dissemination barrier.
+
+The fact that you find the minimum in Average Time per
+barrier for one thread is trivial, as no time intensive 
+synchronization is needed.
+
+We did not implement the Tournament barrier due to
+insuffient time.
+
+\begin{table}
+	\centering\input{./plot/table.tex}
+	\caption{Measurements on \emph{moore}. Each average
+		barrier latency was determined of the mean of
+		1000 passed barriers.}
+
+	\label{tab}
+\end{table}
+
+\begin{figure}
+	\centering\input{./plot/barrier.pgf}
+	\caption{Measurements on \emph{moore}. Each average
+		barrier latency was determined of the mean of
+		1000 passed barriers.}
+	\label{bar}
+\end{figure}
 \end{document}

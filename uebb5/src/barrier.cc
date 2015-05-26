@@ -8,14 +8,12 @@
 *
 * File :        barrier.cc
 *
-* Last Change : 23. Mai 2015
+* Last Change : 25. Mai 2015
 *
 *************************************************************************************************/
 
 #include "barrier.h"
 #include <iostream>
-#include <chrono>
-#include <thread>
 #include <pthread.h>
 #include <cmath>
 #include <queue>
@@ -26,8 +24,6 @@ void* pthread_barrier(void* threadargs) {
 	struct pthread_data* td;
 	td = (struct pthread_data *) threadargs;
 	
-	std::this_thread::sleep_for(std::chrono::seconds(td->wait));
-
 	for (int i = 0; i < td->n_barrier; ++i) {
 		pthread_barrier_wait(td->shared_barrier);
 		++(td->barrier_count);
@@ -41,8 +37,6 @@ void* pthread_barrier(void* threadargs) {
 void* central_barrier(void* threadargs) {
 	struct central_data* td;
 	td = (struct central_data *) threadargs;
-
-	std::this_thread::sleep_for(std::chrono::seconds(td->wait));
 
 	for (int i = 0; i < td->n_barrier; ++i) {
 
@@ -115,19 +109,16 @@ void initialize_tree(struct tree_data* td, int thread_count) {
 		p_node->locksense = false;
 		p_node->id=counter;
 		++counter;
-//		std::cout << "node " << p0->id << " and " << p1->id << " get parent " << p_node->id << std::endl; 
 		p0->parent = p_node;
 		p1->parent = p_node;
 		nq.push(p_node);
 	}
 	p_node = nq.front();
-	p_node->parent = nullptr;
+	p_node->parent = NULL;
 }
 
 void* tree_barrier(void* threadargs) {
 	struct tree_data* td = (struct tree_data *) threadargs;
-
-	std::this_thread::sleep_for(std::chrono::seconds(td->wait));
 
 	for (int j = 0; j < td->n_barrier; ++j) {
 		combining(td->node, td->sense, td->thread_id);
@@ -137,14 +128,8 @@ void* tree_barrier(void* threadargs) {
 }
 
 void combining(struct node_t* pn, bool sense, int id) {
-//	pthread_mutex_lock(&mut);
-//	std::cout << "Thread " << id << " arrived at node " << pn->id << std::endl;
-//	pthread_mutex_unlock(&mut);
 	if (__sync_fetch_and_sub(&pn->count, 1) == 1) {
-		if (pn->parent != nullptr) {
-//			pthread_mutex_lock(&mut);
-//			std::cout << "Thread " << id << " go for node " << pn->parent->id << std::endl;
-//			pthread_mutex_unlock(&mut);
+		if (pn->parent != NULL) {
 			combining(pn->parent, sense, id);
 		}
 		pn->count = pn->k;
@@ -156,30 +141,11 @@ void combining(struct node_t* pn, bool sense, int id) {
 void* dissemination_barrier(void* threadargs) {
 	struct dissemination_data* td = (struct dissemination_data *) threadargs;
 
-	std::this_thread::sleep_for(std::chrono::seconds(td->wait));
-
-/*	pthread_mutex_lock(&mut);
-	std::cout << "thread_id " << td->thread_id << std::endl
-		      << "\tn_barrier    " << td->n_barrier << std::endl
-		      << "\tthread_count " << td->thread_count << std::endl
-		      << "\twait         " << td->wait << std::endl
-		      << "\tsense        " << td->sense << std::endl
-		      << "\tpar          " << td->par << std::endl;
-
-	pthread_mutex_unlock(&mut);*/
-
 	for (int j = 0; j < td->n_barrier; ++j) {
 		for (int i = 0; i < log2(td->thread_count); ++i) {
 			struct flag* const f = &(td->fl[i][td->par]);
 			*f->partner = td->sense;
-//			pthread_mutex_lock(&mut);
-//			std::cout << "Thread " << td->thread_id << " sended message to thread "
-//				      << f->partner_id << std::endl;
-//			pthread_mutex_unlock(&mut);
 			while(f->me != td->sense);
-//			pthread_mutex_lock(&mut);
-//			std::cout << "Thread " << td->thread_id << " got message from thread " << std::endl;
-//			pthread_mutex_unlock(&mut);
 		}
 		++(td->barrier_count);
 		if (td->par == 1) {
@@ -198,7 +164,11 @@ void test_barrier_count(TD* td, int thread_count) {
 
 	bool check = true;
 	for (int i = 0; i < thread_count; ++i) {
-		check = check && (td[i].barrier_count == td[0].barrier_count);
+		// here one value difference in the passed barriers is valid, because
+		// the barrier counter is incremented after the barrier.
+		// Therefore the main process might increment faster, although
+		// all processes synchronized at the barrier.
+		check = check && (abs(td[i].barrier_count - td[0].barrier_count) < 2);
 	}
 	if (!check) {
 		std::cout << "***ERROR: barrier count of threads is not equal." << std::endl;

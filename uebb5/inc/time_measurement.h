@@ -20,6 +20,7 @@
 
 class TimeMeasurer {
 	public:
+		TimeMeasurer() : s(0),e(0) {}
 		void start(std::string key) {
 			struct timeval tim;
 			gettimeofday(&tim, NULL);
@@ -54,7 +55,7 @@ class TimeMeasurer {
 		}
 
 	private:
-		double s = 0, e = 0;
+		double s, e;
 		std::map<std::string, double> startTime;
 		std::map<std::string, double> elapsedTime;
 };

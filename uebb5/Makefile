@@ -8,14 +8,15 @@
 #
 # File :        Makefile
 #
-# Last Change : 23. Mai 2015
+# Last Change : 25. Mai 2015
 #
 #########################################
 
 CPP = g++
-CFLAGS = -I./inc/ -std=c++11 -pthread 
+CFLAGS = -I./inc/ -pthread 
 DEPS = ./inc/time_measurement.h 
 OBJ = ./src/main.o ./src/barrier.o
+DOCU = docu_5
 
 .PHONY: build
 build: $(OBJ)
@@ -27,3 +28,8 @@ build: $(OBJ)
 .PHONY: clean
 clean :
 	rm -f ./src/*.o ./bin/barrier_analysis
+	rm -f ./$(DOCU).pdf ./$(DOCU).aux ./$(DOCU).log
+	
+.PHONY: docu
+docu: ./doc/$(DOCU).tex
+	pdflatex ./doc/$(DOCU).tex

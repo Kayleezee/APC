@@ -8,7 +8,7 @@
 *
 * File :        main.cc
 *
-* Last Change : 23. Mai 2015
+* Last Change : 25. Mai 2015
 *
 *************************************************************************************************/
 
@@ -16,8 +16,6 @@
 #include "chCommandLine.h"
 #include "barrier.h"
 
-#include <thread>
-#include <chrono>
 #include <pthread.h>
 #include <iostream>
 #include <iomanip>
@@ -97,16 +95,8 @@ int main (int argc, char* argv[]) {
 
 		ptd[i].shared_barrier = &barrier;
 	}
-//	std::cout << "initialize_dissemination" << std::endl;
 	initialize_dissemination(dtd, thread_count);
 	initialize_tree(ttd, thread_count);
-/*	for (int i = 0; i < thread_count; ++i) {
-		std::cout << "Thread " << i << " has the following partners:" << std::endl;
-		for (int k = 0; k < log2(thread_count); ++k) {
-			std::cout << "\t" << dtd[i].fl[k][0].partner_id << std::endl;
-		}
-	}*/
-
 
 /*******************
  * PTHREAD BARRIER *
@@ -122,7 +112,6 @@ int main (int argc, char* argv[]) {
 	}
 	pthread_barrier((void *) &ptd[0]);
 	tm.stop("pthread");
-	std::this_thread::sleep_for(std::chrono::seconds(1));
 	test_barrier_count(ptd, thread_count);
 	reset_barrier_count(ptd, thread_count);
 	pthread_barrier_per_second = ((double) n_barrier) / tm.get_time("pthread");
@@ -142,7 +131,6 @@ int main (int argc, char* argv[]) {
 	central_barrier((void *) &ctd[0]);
 	tm.stop("central");
 
-	std::this_thread::sleep_for(std::chrono::seconds(1));
 	test_barrier_count(ctd, thread_count);
 	reset_barrier_count(ctd, thread_count);
 	central_barrier_per_second = ((double) n_barrier) / tm.get_time("central");
@@ -161,7 +149,6 @@ int main (int argc, char* argv[]) {
 	}
 	dissemination_barrier((void *) &dtd[0]);
 	tm.stop("dissemination");
-	std::this_thread::sleep_for(std::chrono::seconds(1));
 	test_barrier_count(dtd, thread_count);
 	reset_barrier_count(dtd, thread_count);
 	dissemination_barrier_per_second = ((double) n_barrier) / tm.get_time("dissemination");
@@ -180,7 +167,6 @@ int main (int argc, char* argv[]) {
 	}
 	tree_barrier((void *) &ttd[0]);
 	tm.stop("tree");
-	std::this_thread::sleep_for(std::chrono::seconds(1));
 	test_barrier_count(ttd, thread_count);
 	reset_barrier_count(ttd, thread_count);
 	tree_barrier_per_second = ((double) n_barrier) / tm.get_time("tree");
