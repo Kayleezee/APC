@@ -45,10 +45,9 @@ class environment_error : public exception {
 		string message;
 };
 
+template <typename data_t>
 class ThreadArg {
 	public:
-		typedef unsigned int data_t;
-
 		ThreadArg(size_t thread_id, size_t thread_count,
 		          vector<data_t>* pArray, vector<data_t>* pSum, pthread_barrier_t* pBar) :
 		          tid_(thread_id),

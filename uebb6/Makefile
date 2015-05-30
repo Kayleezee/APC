@@ -11,9 +11,9 @@
 ##################################################################
 
 CPP = g++
-CFLAGS = -I./inc/ -pthread -std=c++0x 
+CFLAGS = -I./inc/ -pthread -std=c++0x -O3 
 DEPS = ./inc/time_measurement.h src/thread_handler.h src/thread_arg.h src/thread_routines.h
-OBJ = ./src/main.o ./src/thread_routines.o
+OBJ = ./src/main.o
 DOCU = docu_6
 
 .PHONY: build
@@ -25,9 +25,14 @@ build: $(OBJ)
 	
 .PHONY: clean
 clean :
-	rm -f ./src/*.o ./bin/barrier_analysis
+	rm -f ./src/*.o ./bin/parallel_prefix_sum
 	rm -f ./$(DOCU).pdf ./$(DOCU).aux ./$(DOCU).log
 	
+.PHONY: rebuild
+rebuild:
+	make clean
+	make
+
 .PHONY: docu
 docu: ./doc/$(DOCU).tex
 	pdflatex ./doc/$(DOCU).tex
