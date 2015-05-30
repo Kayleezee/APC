@@ -19,6 +19,7 @@
 #include <iostream>
 #include <random>
 #include <exception>
+#include <cstdlib>
 
 #include "thread_arg.h"
 
@@ -34,6 +35,9 @@ class index_error : public exception {
 		const char* what() const throw() {
 			return name_.c_str();
 		}
+
+		~index_error() throw() {}
+
 	private:
 		string name_;
 };
@@ -151,10 +155,11 @@ void* parallel_scan (void* threadarg) {
 template <typename data_t>
 vector<data_t> init_random_array (size_t s, data_t min, data_t max = 100) {
 	vector<data_t> v(s);
-	default_random_engine gen(0); // random engine with seed 0 //
-	uniform_int_distribution<data_t> dist(min, max);
-	for (auto& e : v) {
-		e = dist(gen); 
+//	default_random_engine gen(0); // random engine with seed 0 // old compiler on moore does not allow this
+//	uniform_int_distribution<data_t> dist(min, max);
+	srand(0);
+	for (int i = 0; i < s; ++i) {
+		v[i] = (data_t) (rand() % (max - min)  + min); 
 	}
 	return v;
 }

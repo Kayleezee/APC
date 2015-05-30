@@ -12,7 +12,7 @@
 
 CPP = g++
 CFLAGS = -I./inc/ -pthread -std=c++0x -O3 
-DEPS = ./inc/time_measurement.h src/thread_handler.h src/thread_arg.h src/thread_routines.h
+DEPS = ./inc/time_measurement.h inc/thread_handler.h src/thread_arg.h src/thread_routines.h
 OBJ = ./src/main.o
 DOCU = docu_6
 
