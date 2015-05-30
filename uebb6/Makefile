@@ -11,9 +11,9 @@
 ##################################################################
 
 CPP = g++
-CFLAGS = -I./inc/ -pthread 
-DEPS = ./inc/time_measurement.h src/thread_handler.h
-OBJ = ./src/main.o
+CFLAGS = -I./inc/ -pthread -std=c++0x 
+DEPS = ./inc/time_measurement.h src/thread_handler.h src/thread_arg.h src/thread_routines.h
+OBJ = ./src/main.o ./src/thread_routines.o
 DOCU = docu_6
 
 .PHONY: build
