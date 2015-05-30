@@ -23,6 +23,7 @@
 
 static const int DEFAULT_THREAD_COUNT = 4;
 static const int DEFAULT_ARRAY_SIZE = 1000;
+static const int DEFAULT_N_EXPERIMENTS = 1;
 
 using namespace std;
 
@@ -52,6 +53,28 @@ int main (int argc, char** argv) {
 	needHelp = chCommandLineGetBool("h", argc, argv);
 	if (needHelp) {printHelp(argv[0]); return 0;}
 	
+	// Automatic Array Size Correction
+	//		this means that the program checks if asize % tcount == 0.
+	//		If not it takes the next higher asize, which satisfy this condition
+	bool cAsize = false;
+	cAsize = chCommandLineGetBool("correct-size", argc, argv);
+	if (cAsize) {
+		if (asize % tcount == 0) {
+			cAsize = false; // no correction needed
+		}
+		else {
+			asize += (tcount - asize % tcount);
+		}
+	}
+	
+	// execute nExp number of experiments and average time results //
+	int nExp = -1;
+	chCommandLineGet<int>(&nExp, "n", argc, argv);
+	nExp = (nExp == -1) ? DEFAULT_N_EXPERIMENTS : nExp;
+	if (nExp != 1) {
+		skipSeq = true; // no correctness tests for more than one experiment
+	}
+
 /*******************************
  * INITIALIZE THREAD ARGUMENTS *
  *******************************/
@@ -78,7 +101,9 @@ int main (int argc, char** argv) {
  	ThreadHandler<ThreadArg<data_t> > thandler(tcount, p_parallel_scan, vThreadArg);
 	TimeMeasurer tm; // for time measurements
 	tm.start("parallel");
-	thandler.doWork();
+	for (int i = 0; i < nExp; ++i) {
+		thandler.doWork();
+	}
 	tm.stop("parallel");
 
 /**********************************
@@ -112,9 +137,11 @@ int main (int argc, char** argv) {
 	cout << endl << "Program Report:"
 	     << endl << "\tarray_size " << asize
 		 << endl << "\tthread_count " << tcount
-		 << endl << "\tprefix_sum_time_parallel   " << tm.get_time("parallel") << " s"
-		 << endl << "\tprefix_sum_time_sequential " << tm.get_time("sequential") << " s"
-		 << endl << endl;
+		 << endl << "\tprefix_sum_time_parallel   " << tm.get_time("parallel") / ((double) nExp) << " s" << endl;
+	if (!skipSeq) {
+		cout<< "\tprefix_sum_time_sequential " << tm.get_time("sequential") << " s" << endl;
+	}
+		 cout << endl;
 
 	// Finalize //		 
 	pthread_exit(NULL);

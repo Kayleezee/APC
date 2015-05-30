@@ -1,0 +1,76 @@
+% PREAMBLE
+%%%%%%%%%%
+%%%%%%%%%%
+
+\documentclass[oneside,a4paper]{scrartcl}
+
+% PACKAGES
+%%%%%%%%%%
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{pgf}
+\usepackage{placeins}
+\usepackage{listings}
+
+
+% DOCUMENT
+%%%%%%%%%%
+%%%%%%%%%%
+
+\begin{document}
+
+%%%%%%%
+% TITLE
+%%%%%%%
+
+\title{Exercise Sheet VI}
+\subject{Advanced Parallel Computing}
+\author{Klaus Naumann \& Christoph Klein}
+\maketitle
+
+%%%%%%%
+% PART 1 - Reading
+%%%%%%%
+
+%%%%%%%
+% PART 2 - Experiments
+%%%%%%%
+
+\section{Parallel Prefix Sum -- Development}
+
+We provide the code in different files, which we will explain shortly:
+\begin{description}
+	\item[./src/main.cc] This conains our \texttt{main} function and handles
+	command line arguments. You can choose the thread count \texttt{-t},
+	the array size \texttt{-s}, the number of measurements to average
+	time measurements \texttt{-n}. Furthermore you can skip the 
+	sequential calculation, which verifies the parallel results by
+	\texttt{-sq} and you can enable array size correction, as the
+	program only accepepts array sizes $s$ and thread counts $t$, which
+	satisfy
+	\[s \;\textnormal{mod}\; t = 0\:.\]
+	This means if $s$ does not satisfy this condition the program
+	takes another value $s'$ as array size, which is determined by
+	\[ s' = s + (t - s\;\textnormal{mod}\; t)\:.\]
+	You can enable this option by \texttt{-correct-size}. Furthermore
+	our code is templated to enable various numeric types. Especially
+	you will run quickly into overflow problems with large arrays, if you
+	consider high random numbers and \texttt{int} as the numeric type.
+	\item[./inc/thread\_handler.h] This is a generic written
+	pthread handling class. You can see it as syntactic sugar.
+	\item[./inc/chCommandLine.h] Command line argument handling.
+	\item[.time\_measurement.h] This file provides an easy class based way
+	to make time measurements in your program.
+	\item[./src/thread\_arg.h] Here you can find the class definition of
+	our objects, which are given to the threads on creation, thus the
+	Thread-Argument-Class.
+	\item[./src/thread\_routines.h] provides the prefix scan routine,
+	the function, which will be executed by threads on their creation,
+	and the random array initialization function.
+
+\section{Parallel Prefix Sum -- Analysis}
+mean = 10
+
+\end{description}
+
+\end{document}
