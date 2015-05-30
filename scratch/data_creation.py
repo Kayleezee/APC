@@ -198,7 +198,10 @@ for i, command in list(enumerate(strCommandList)):
             key2Fieldname[key] = key + '[' + unit + ']'
             fieldnames.append(key + '[' + unit + ']')
         writer = csv.DictWriter(f_out, delimiter=' ', fieldnames=fieldnames)
-#        writer.writeheader()
+#        writer.writeheader() # does not work on moore. Therefore we do the hacky solution:
+        headerWriter = csv.writer(f_out, delimiter=' ')
+        headerWriter.writerow(fieldnames)
+
         f_initialized = True
     if opt_v: 
         print "\n\n"
