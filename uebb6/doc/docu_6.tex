@@ -37,7 +37,7 @@
 %%%%%%%
 
 \section{Parallel Prefix Sum -- Development}
-
+\label{dev}
 We provide the code in different files, which we will explain shortly:
 \begin{description}
 	\item[./src/main.cc] This conains our \texttt{main} function and handles
@@ -67,10 +67,45 @@ We provide the code in different files, which we will explain shortly:
 	\item[./src/thread\_routines.h] provides the prefix scan routine,
 	the function, which will be executed by threads on their creation,
 	and the random array initialization function.
+\end{description}
 
 \section{Parallel Prefix Sum -- Analysis}
-mean = 10
+We executed the our program using different options of the \texttt{numactl} tool:
+\begin{center}
+\begin{tabular}{l|l}
+Option Label & Explanation\\\hline
+Default & We used \texttt{numactl} without any additional options\\
+Membind 0,1 & \texttt{numactl --membind=0,1}, which binds the memory to node 0 and 1\\
+Membind 0 & Analog to above with node 0 only\\
+Interleave & \texttt{numactl --interleave=all} distribute the memory to all nodes
+\end{tabular}
+\end{center}
+We used two Membind options, because the exercise sheet mentions that \emph{moore} has four
+nodes on the contrary to \texttt{numactl --hardware}, which shows eight nodes.
+This means we have two definitions of what a 'node' is, thus we performed measurements
+binding the used memory to one 'node' for both definitions.
 
-\end{description}
+You can see our results using the \texttt{correct-size} option (chapter \ref{dev}) in figure \ref{plot}.
+For one thread you see that the Default-Line shows the fastest calculation time. We think
+that the other lines show slower calculation times, because the array is not saved on a
+node, which is 'near' to the node, which executes the calculation. For the Default-Line and Membind-Lines
+you already see a saturation in the calculation time for eight threads. As increasing the
+thread count does not lead to faster calculation times, the parallel prefix summation is
+a memory bound problem. 
+We assume that the default option of \texttt{numactl} places the array on one node,
+because the Membind-Lines and Default-Lines approach each other.
+Furthermore there is no significant difference between the Membind-Lines, thus the
+difference in the definitions of 'node' is not important for our calculation.
+The Interleave-Line shows that a distributed array placement to
+different nodes is beneficial. The working threads can access faster their data. Nevertheless
+we reach a saturation for about 16 threads.
+
+\begin{figure}
+	\centering\input{plot/plot.pgf}
+	\caption{Average parallel prefix sum calculation time over the thread count on \emph{moore}. Each point represents
+		the time average of 10 calculations. We used an array of $10^9$ elements of type \texttt{unsigned long int}.
+		We executed the program using different options of the \texttt{numactl} tool.}
+	\label{plot}
+\end{figure}
 
 \end{document}
