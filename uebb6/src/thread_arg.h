@@ -21,6 +21,10 @@
 
 using namespace std;
 
+/*
+ *  DESCRIPTION - This error will be thrown if the thread count and array size
+ *                do not satisfy the algorithm's condition
+ */
 class environment_error : public exception {
 	public:
 		environment_error(size_t lenArray, size_t tcount) : lenArray_(lenArray), tcount_(tcount) {
@@ -32,11 +36,10 @@ class environment_error : public exception {
 			message = ss.str();	
 		}
 
-
 		const char* what() const throw() {
 			return message.c_str();
 		}
-
+		
 		~environment_error() throw() {}
 
 	private:
@@ -45,9 +48,26 @@ class environment_error : public exception {
 		string message;
 };
 
+/*
+ *  DESCRIPTION - Objects of this class are given to each pthread on their
+ *                creation.
+ *  PARAMETER   - data_t: this is the numeric data type of the array, which
+ *                is used for parallel prefix summation.
+ */
 template <typename data_t>
 class ThreadArg {
 	public:
+		/*
+		 *  DESCRIPTION - Constructor
+		 *  PARAMETER   - thread_id
+		 *              - thread_count: total amount of working threads
+		 *              - pArray: pointer to the array, which is used to
+		 *                calculate the parallel prefix sum.
+		 *              - pSum: pointer to the array, where every thread
+		 *                saves its the total sum of the array part it is
+		 *                working on.
+		 *              - pBar: pthread barrier for synchronization
+		 */
 		ThreadArg(size_t thread_id, size_t thread_count,
 		          vector<data_t>* pArray, vector<data_t>* pSum, pthread_barrier_t* pBar) :
 		          tid_(thread_id),
@@ -63,7 +83,8 @@ class ThreadArg {
 			jobSize_ = size / thread_count;
 			offset_  = jobSize_ * thread_id;
 		}
-
+		
+		// GET FUNCTIONS //
 		size_t tid() const {return tid_;}	
 		size_t offset() const {return offset_;}
 		size_t jobSize() const {return jobSize_;}

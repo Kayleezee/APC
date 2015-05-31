@@ -149,9 +149,17 @@ int main (int argc, char** argv) {
 
 void printHelp(char* progName) {
 	cout << endl << "Usage:"
-	     << endl << progName << " -s <array size> -t <thread count>" << endl
+	     << endl << progName << " -s <array size> -t <thread count> -n <number of summations>" << endl
 		 << endl << "Main Options:"
 		 << endl << "  -h   Print this help message"
 		 << endl << "  -sq  Skip sequential calculation of prefix sum (no correctness tests)"
+		 << endl << "  -n <number of summations> This options sets the total number of parallel prefix"
+		 << endl << "                            summations. The time for every summation will be measured."
+		 << endl << "                            The program gives back the average time for one summation."
+		 << endl << "                            If the given number > 1, the program will omit the sequential"
+		 << endl << "                            correctness tests."  
+		 << endl << "  -correct-size One condition for the algorithm is that (s mod t) == 0, with s=array size"
+		 << endl << "                and t=thread count. If you enable this option the program increases the array"
+		 << endl << "                size, until this conditions is satisfied, instead of throwing an error."
 		 << endl << endl;
 }
