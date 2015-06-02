@@ -31,6 +31,38 @@
 %%%%%%%
 % PART 1 - Reading
 %%%%%%%
+\section{Review: Software Transactional Memory - Why is it only a research toy?}
+In their september 2008 released paper Cascaval et al. explore the performance 
+of software transactional memory algorithms from IBM, Intel and Sun TL2. The 
+experiments were executed with a view to interaction with nontransactional code, 
+exceptions and serializability and livelocks.
+\\
+As a result the authors are of the opinion that the TM model elevate the 
+complexity and overhead and therefore limits the performance exploit. Especially 
+at low-level parallelism the performance of STM is much worse than expected and 
+for this reason not expected to be supported by more than a small amount of hardware.
+\\
+As pointed out in the Paper by Dragojevic et al. STM can perform way better than 
+outlined by Cascaval et al. yet is only supported by a small range of CPUs. It is
+far off to be supported by a big variety of hardware due to high additional costs.     
+
+\section{Review: Why STM can be more than a research toy}
+The paper 'Why STM can be more than a research toy' by Dragojevic et al. released 
+in April 2011 inspects the performance of software transactional memory compared 
+to sequential, nontransactional code. To analyze the performance gain of STM the 
+benchmarks were executed on a Sun Microsystems Ultra-SPARC T2 CPU and a four 
+quad-core AMD Opteron machine with a view to synchronization costs, compiler 
+overinstrumentation and transparent privatization.
+\\
+Dragojevic et al. outline that STM often outperform sequential, nontransactional 
+applications across different multicore architectures. Further the authors suggest 
+improvements which could boost the performance of STM like partially visible reads, 
+static segregation of memory location and reduction of accesses to shared data. 
+These suggestions could minimize compiler overhead, improve scalability and privatization.
+\\
+To our mind the authors suggestion point in the right direction. Unfortunately at 
+this point in time the additional costs to implement STM are too high to compete 
+with conventional techniques.    
 
 %%%%%%%
 % PART 2 - Experiments
