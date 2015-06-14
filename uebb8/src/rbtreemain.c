@@ -77,8 +77,7 @@ void vOperationStream_parallel(int *iId) {
     int iAmountOpsPerThread;
     int iThreadId = (intptr_t) iId;
 
-    iAmountOpsPerThread = ((iThreadId + 1)*iOperations)/iNumThreads - (iThreadId*iOperations)/iNumThreads;
-    //printf("\nOperations per Thread: %d, Thread No.: %d", iAmountOpsPerThread, iThreadId);
+    iAmountOpsPerThread = iOperations / iNumThreads;
 
     while(i < iAmountOpsPerThread) {
         for(j = 0; j < iNumInsert; j++) {
@@ -86,7 +85,6 @@ void vOperationStream_parallel(int *iId) {
             iKey = rand();
             rbtree_insert(RBTree, (void*)iKey, (void*)iValue, int_compare);
             i++;
-            printf("\nThread No. %d\t, Operation No. %d", iThreadId, i);
         }
 
         for(j = 0; j < iNumSearch; j++) {
@@ -119,8 +117,8 @@ int main(int argc, char **argv) {
     }
 
     // define ratio
-    iNumInsert = iRatioInsert;//(iOperations * iRatioInsert) / 100;
-    iNumSearch = iRatioSearch;//(iOperations * (100 - iRatioInsert)) / 100;
+    iNumInsert = iRatioInsert;
+    iNumSearch = iRatioSearch;
 
     printf("\nAmount of insert operations: %d", iNumInsert);
     printf("\nAmount of search operations: %d", iNumSearch);

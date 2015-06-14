@@ -71,10 +71,10 @@ void vOperationStream_parallel(int *iId) {
     int i = 0;
     int j;
     int iKey;
-    int iAmountOpsPerThread;
+    int iAmountOpsPerThread;    // work slice for every thread
     int iThreadId = (intptr_t) iId;
 
-    iAmountOpsPerThread = ((iThreadId + 1)*iOperations)/iNumThreads - (iThreadId*iOperations)/iNumThreads;
+    iAmountOpsPerThread = iOperations / iNumThreads;
 
     while(i < iAmountOpsPerThread) {
         for(j = 0; j < iNumInsert; j++) {
