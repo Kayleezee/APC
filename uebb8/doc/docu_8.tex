@@ -1,0 +1,56 @@
+% PREAMBLE
+%%%%%%%%%%
+%%%%%%%%%%
+
+\documentclass[oneside,a4paper]{scrartcl}
+
+% PACKAGES
+%%%%%%%%%%
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{pgf}
+\usepackage{placeins}
+\usepackage{listings}
+
+
+% DOCUMENT
+%%%%%%%%%%
+%%%%%%%%%%
+
+\begin{document}
+
+%%%%%%%
+% TITLE
+%%%%%%%
+
+\title{Exercise Sheet VIII}
+\subject{Advanced Parallel Computing}
+\author{Klaus Naumann \& Christoph Klein}
+\maketitle
+
+%%%%%%%
+% PART 1 - Reading
+%%%%%%%
+\section*{Reading}
+\subsection*{First Paper}
+The paper 'The AMD Opteron Northbridge Architecture' from Pat Conway and Bill Hughes
+published in 2007 presents an improved Northbridge architecture realized by AMD's
+Direct Connect architecture, which uses an industry-standard HyperTransport technology
+to link the processors with each other.
+
+The main advantages of a HyperTransport interconnection are scalability, a high
+bandwidth and wol latency. Furthermore the Direct Connect architecture provides
+on chip integrated memory controller, thus reducing the front side bus bottlenecks.
+The implemented HyperTransport protocol (HTP) ensures a coherent shared memory address
+space. The HTP uses a broadcast-based coherence protocol, thus supports a good scaling
+up to an eight-socket. Moreover this architecture has a lower power consumption
+in comparison to the front side bus architecture.
+
+To our mind this paper presents a detailed technical view on the new Northbridge
+architecture, thus it provides useful information for the system architect, but not for
+the system user. We would accept this paper, because sharing system architecture information
+supports/accelerates system architecture developement.
+
+
+
+\end{document}
