@@ -1,7 +1,4 @@
 % PREAMBLE
-%%%%%%%%%%
-%%%%%%%%%%
-
 \documentclass[oneside,a4paper]{scrartcl}
 
 % PACKAGES
@@ -51,6 +48,49 @@ architecture, thus it provides useful information for the system architect, but 
 the system user. We would accept this paper, because sharing system architecture information
 supports/accelerates system architecture developement.
 
+\section*{Red-Black Tree - Coarse-Grain Lock -- Development}
+\label{dev}
+We provide the code in different files, which we will explain shortly:
+\begin{description}
+    \item[./src/rbtreemain.c] This file contains our \texttt{main} function, the updatestream and 
+				time-measurement functions and handles command line arguments. 
+				You can choose the thread count, the search and insert operations.
+    \item[./src/main.c] This file contains the \texttt{main} function as described in 
+			\texttt{./src/rbtreemain.c} which is modified to handle the testing part of 
+			our implementation of the red-black tree for various threads and ratios of 
+			insert/search operations which we modified by hand after each ratio test routine. 
+\end{description}
+The files \texttt{rbtree.c} and \texttt{rbtree.h} contain functions for several operations of the red-black
+tree and were already provided in exercise 7.
+As a lock we used \emph{pthread\_rwlock} which provides a shared read lock and an exclusive write lock.
 
+\section*{Red-Black Tree - Coarse-Grain Lock -- Analysis}
+We executed our program using various amount of threads and insert/search ratios. As you can see for each 
+thread amount and ratio the executed operations per second are on a nearly constant level.  With increasing
+insert operations the operations per second decrease. \\
+ In figure \ref{plot_1090} the algorithm can execute between 1.00e+05 to nearly 3.00e+05 operations per second 
+depending on the amount of threads. Here we used a ratio of 10/90 (insert/search). With a ratio of 90/10 (insert/search)
+the possible operations per second decrease to a rate of 0.75e+05 to nearly 1.50e+05 as you can see in figure 
+\ref{plot_9010}.
+    
+\begin{figure}
+	\centering
+	\includegraphics[width=1.0\textwidth]{results1090.png}
+	\caption{Red-Black Tree test on \emph{moore} with a ratio of 10/90 (Insert/Search) for 1 to 48 threads.}
+	\label{plot_1090}
+\end{figure}
 
+\begin{figure}
+	\centering
+	\includegraphics[width=1.0\textwidth]{results5050.png}
+	\caption{Red-Black Tree test on \emph{moore} with a ratio of 50/50 (Insert/Search) for 1 to 48 threads.}
+	\label{plot_5050}
+\end{figure}
+
+\begin{figure}
+	\centering
+	\includegraphics[width=1.0\textwidth]{results9010.png}
+	\caption{Red-Black Tree test on \emph{moore} with a ratio of 90/10 (Insert/Search) for 1 to 48 threads.}
+	\label{plot_9010}
+\end{figure}
 \end{document}

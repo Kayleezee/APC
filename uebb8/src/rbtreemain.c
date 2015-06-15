@@ -33,9 +33,6 @@ int iNumSearch;
 int iNumInsert;
 int iKey;
 int iValue;
-int iRatioInsert;
-int iRatioSearch;
-int iMode;
 
 /*************************************************************************************************
 * USAGE HEADER
@@ -45,7 +42,6 @@ void vPrintUsage() {
             "\n\t<T: number of threads>"
             "\n\t<O: number of operations>"
             "\n\t<I: amount of insert operations in percent>"
-            //"\n\t<M: mode [0: SEQUENTIAL | 1: PARALLEL]>"
             "\n");
 }
 
@@ -96,32 +92,27 @@ void vOperationStream_parallel(int *iId) {
 }
 
 int main(int argc, char **argv) {
-    int i, s;
+    int i;
 
     double dStart = 0.0;
-    //double dTime_sequential = 0.0;
     double dTime_parallel = 0.0;
 
     pthread_t * pThreads;
 
-    if(argc == 5) {
+    if(argc == 4) {
         iNumThreads = atoi(argv[1]);
-        iOperations = atoi(argv[2]);
-        iRatioInsert = atoi(argv[3]);
-        iRatioSearch = atoi(argv[4]);
-        //iMode = atoi(argv[4]);
+        iNumInsert = atoi(argv[2]);
+        iNumSearch = atoi(argv[3]);
     }
     else {
         vPrintUsage();
         return EXIT_FAILURE;
     }
 
-    // define ratio
-    iNumInsert = iRatioInsert;
-    iNumSearch = iRatioSearch;
+    iOperations = iNumInsert + iNumSearch;
 
-    printf("\nAmount of insert operations: %d", iNumInsert);
-    printf("\nAmount of search operations: %d", iNumSearch);
+    //printf("\nAmount of insert operations: %d", iNumInsert);
+    //printf("\nAmount of search operations: %d", iNumSearch);
 
     // create red-black tree
     RBTree = rbtree_create();
@@ -133,29 +124,6 @@ int main(int argc, char **argv) {
         rbtree_insert(RBTree, (void*)iKey, (void*)iValue, int_compare);
         printf("\nI'm ok! Index: %d", i);
     }
-
-
-    /* SEQUENTIAL PART */
-    //dStart = dStartMeasurement();
-    /*
-    for(s = 0; s < iNumInsert; s++) {
-        iValue = rand() % 1000;
-        iKey = rand() % INIT_TREE_ELEMENTS;
-
-        rbtree_insert(RBTree, (void*)iKey, (void*)iValue, int_compare);
-    }
-
-    for(s = 0; s < iNumSearch; s++) {
-        iValue = rand() % 1000;
-        iKey = rand() % INIT_TREE_ELEMENTS;
-
-        rbtree_lookup(RBTree, (void*)iKey, int_compare);
-    }
-    */
-    //rbtree_insert_sequential();
-    //rbtree_lookup_sequential();
-
-    //dTime_sequential = dStopMeasurement(dStart);
 
     /* PARALLEL PART */
     pThreads = (pthread_t*) malloc(iNumThreads * sizeof(pthread_t));
@@ -190,12 +158,10 @@ int main(int argc, char **argv) {
     printf("\n# RED-BLACK TREE \n#");
     printf("\n#--------------------------------------------------------------\n#");
     printf("\n# Operations:            %d", iOperations);
-    printf("\n# InsertOperations       %d", iNumInsert);
-    printf("\n# SearchOperations       %d", iNumSearch);
-    //printf("\n# SEQUENTIAL Time total:  %.5lf s", dTime_sequential);
-    //printf("\n# SEQUENTIAL Ops/sec.:    %.0lf", iOperations/dTime_sequential);
-    printf("\n# time  %.5lf s", dTime_parallel);
-    printf("\n# OpsPerSecond    %.0lf", iOperations/dTime_parallel);
+    printf("\n# InsertOperations:      %d", iNumInsert);
+    printf("\n# SearchOperations:      %d", iNumSearch);
+    printf("\n# Time:                  %.5lf s", dTime_parallel);
+    printf("\n# OpsPerSecond:          %.0lf", iOperations/dTime_parallel);
     printf("\n#==============================================================\n#");
 
     return EXIT_SUCCESS;
