@@ -14,8 +14,12 @@ CC=gcc
 CFLAGS=-pthread
 
 redblacktree:
+	$(CC) $(CFLAGS) src/rbtreemain.c src/rbtree.c -o redblacktree
+
+rbttest:
 	$(CC) $(CFLAGS) src/main.c src/rbtree.c -o redblacktree
 
 .PHONY: clean
 clean :
 	rm -f redblacktree
+	rm -f rbttest

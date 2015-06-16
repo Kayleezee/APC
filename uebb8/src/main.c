@@ -24,7 +24,6 @@
 
 #define INIT_TREE_ELEMENTS  10000000
 
-pthread_rwlock_t lock;
 rbtree RBTree;
 
 int iNumThreads;
@@ -80,13 +79,13 @@ void vOperationStream_parallel(int *iId) {
         for(j = 0; j < iNumInsert; j++) {
             iValueInsert = rand();
             iKeyInsert = rand();
-            rbtree_insert(RBTree, (void*)iKeyInsert, (void*)iValueInsert, int_compare);
+            rbtree_insert_parallel(RBTree, (void*)iKeyInsert, (void*)iValueInsert, int_compare);
             i++;
         }
 
         for(j = 0; j < iNumSearch; j++) {
             iKey = j;
-            rbtree_lookup(RBTree, (void*)iKey, int_compare);
+            rbtree_lookup_parallel(RBTree, (void*)iKey, int_compare);
             i++;
         }
     }

@@ -14,6 +14,9 @@
 *
 *************************************************************************************************/
 #ifndef _RBTREE_H_
+#include <pthread.h>
+
+pthread_rwlock_t lock;
 
 enum rbtree_color { RED , BLACK};
 
@@ -38,7 +41,11 @@ rbtree rbtree_create();
 int int_compare(void* left, void* right);
 // Search function
 void* rbtree_lookup(rbtree t, void* key, compare_func compare);
+// Search function parallel
+void* rbtree_lookup_parallel(rbtree t, void* key, compare_func compare);
 // Add function
 void rbtree_insert(rbtree t, void* key, void* value, compare_func compare);
+// Add function parallel
+void rbtree_insert_parallel(rbtree t, void* key, void* value, compare_func compare);
 
 #endif // _RBTREE_H_
