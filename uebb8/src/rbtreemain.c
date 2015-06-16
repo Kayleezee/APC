@@ -32,6 +32,7 @@ int iNumSearch;
 int iNumInsert;
 int iKey;
 int iValue;
+pthread_rwlock_t lock;
 
 /*************************************************************************************************
 * USAGE HEADER
@@ -39,8 +40,8 @@ int iValue;
 void vPrintUsage() {
     printf("\nUsage:\n\n./mtlb\n"
             "\n\t<T: number of threads>"
-            "\n\t<O: number of operations>"
-            "\n\t<I: amount of insert operations in percent>"
+            "\n\t<I: amount of insert operations>"
+            "\n\t<S: amount of search operations>"
             "\n");
 }
 
@@ -78,13 +79,17 @@ void vOperationStream_parallel(int *iId) {
         for(j = 0; j < iNumInsert; j++) {
             iValue = rand();
             iKey = rand();
-            rbtree_insert_parallel(RBTree, (void*)iKey, (void*)iValue, int_compare);
+            pthread_rwlock_wrlock(&lock); // lock tree - exclusive lock
+            rbtree_insert(RBTree, (void*)iKey, (void*)iValue, int_compare);
+            pthread_rwlock_unlock(&lock); // unlock tree - exclusive lock
             i++;
         }
 
         for(j = 0; j < iNumSearch; j++) {
             iKey = rand();
-            rbtree_lookup_parallel(RBTree, (void*)iKey, int_compare);
+            pthread_rwlock_rdlock(&lock); // lock - shared lock
+            rbtree_lookup(RBTree, (void*)iKey, int_compare);
+            pthread_rwlock_unlock(&lock); // unlock - shared lock
             i++;
         }
     }
@@ -110,9 +115,6 @@ int main(int argc, char **argv) {
 
     iOperations = iNumInsert + iNumSearch;
 
-    //printf("\nAmount of insert operations: %d", iNumInsert);
-    //printf("\nAmount of search operations: %d", iNumSearch);
-
     // create red-black tree
     RBTree = rbtree_create();
 
@@ -123,7 +125,8 @@ int main(int argc, char **argv) {
         rbtree_insert(RBTree, (void*)iKey, (void*)iValue, int_compare);
     }
 
-    /* PARALLEL PART */
+    printf("\nTree initialized!");
+
     pThreads = (pthread_t*) malloc(iNumThreads * sizeof(pthread_t));
 
     if(pthread_rwlock_init(&lock, NULL)) {

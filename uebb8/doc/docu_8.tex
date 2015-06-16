@@ -48,6 +48,26 @@ architecture, thus it provides useful information for the system architect, but 
 the system user. We would accept this paper, because sharing system architecture information
 supports/accelerates system architecture developement.
 
+\subsection*{Second Paper}
+The paper 'The SGI Origin: a ccNUMA highly scalable server' from James Laudon and Daniel
+Lenoski published in 1997 presents a chache-coherent non-uniform memory access (ccNUMA)
+multiprocessor.
+
+The caches are kept directory based coherent, which avoids
+the broadcast bottleneck. The Origin symmetric multiprocessor architecture was designed
+for dual-processor nodes with 4GB main memory and up to a maximum of 512 nodes.
+As a network topology a bristled fat hypercube was choosen, where two nodes are
+always connected to one SPIDER router. The used cache coherence protocol is alike
+the DASH protocol, but has some improvements like the Clean-exclusive processor cache
+state or full support of upgrade requests, without latency and bandwidth overhead
+of moving the memory data. Furthermore the authors present the system performance using
+the NAS Parallel benchmarks and the SPLASH2 suite.
+
+To our mind this paper presents more a certain product rather than a new scientific
+concept. Nevertheless we would acceppt this paper, because the system might be
+well suited for certain scientific applications.
+
+
 \section*{Red-Black Tree - Coarse-Grain Lock -- Development}
 \label{dev}
 We provide the code in different files, which we will explain shortly:
@@ -55,10 +75,7 @@ We provide the code in different files, which we will explain shortly:
     \item[./src/rbtreemain.c] This file contains our \texttt{main} function, the updatestream and 
 				time-measurement functions and handles command line arguments. 
 				You can choose the thread count, the search and insert operations.
-    \item[./src/main.c] This file contains the \texttt{main} function as described in 
-			\texttt{./src/rbtreemain.c} which is modified to handle the testing part of 
-			our implementation of the red-black tree for various threads and ratios of 
-			insert/search operations which we modified by hand after each ratio test routine. 
+
 \end{description}
 The files \texttt{rbtree.c} and \texttt{rbtree.h} contain functions for several operations of the red-black
 tree and were already provided in exercise 7.
@@ -71,7 +88,8 @@ insert operations the operations per second decrease. \\
  In figure \ref{plot_1090} the algorithm can execute between 1.00e+05 to nearly 3.00e+05 operations per second 
 depending on the amount of threads. Here we used a ratio of 10/90 (insert/search). With a ratio of 90/10 (insert/search)
 the possible operations per second decrease to a rate of 0.75e+05 to nearly 1.50e+05 as you can see in figure 
-\ref{plot_9010}.
+\ref{plot_9010}. The reason for this performance loss is the exclusive write-lock. At the time when one thread inserts a
+node all other threads are spinning. 
     
 \begin{figure}
 	\centering

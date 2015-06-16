@@ -183,13 +183,6 @@ void* rbtree_lookup(rbtree t, void* key, compare_func compare) {
     return n == NULL ? NULL : n->vValue;
 }
 
-void* rbtree_lookup_parallel(rbtree t, void* key, compare_func compare) {
-    pthread_rwlock_rdlock(&lock); // read lock - mutual lock
-    node n = lookup_node(t, key, compare);
-    pthread_rwlock_unlock(&lock); // unlock - mutual lock
-    return n == NULL ? NULL : n->vValue;
-}
-
 void rotate_left(rbtree t, node n) {
     node r = n->right;
     replace_node(t, n, r);
@@ -262,43 +255,6 @@ void rbtree_insert(rbtree t, void* key, void* value, compare_func compare) {
     insert_case1(t, inserted_node);
     verify_properties(t);
 }
-
-void rbtree_insert_parallel(rbtree t, void* key, void* value, compare_func compare) {
-    pthread_rwlock_wrlock(&lock); // write lock - lock tree
-    node inserted_node = new_node(key, value, RED, NULL, NULL);
-    if (t->root == NULL) {
-        t->root = inserted_node;
-    } else {
-        node n = t->root;
-        while (1) {
-            int comp_result = compare(key, n->vKey);
-            if (comp_result == 0) {
-                n->vValue = value;
-                return;
-            } else if (comp_result < 0) {
-                if (n->left == NULL) {
-                    n->left = inserted_node;
-                    break;
-                } else {
-                    n = n->left;
-                }
-            } else {
-                assert (comp_result > 0);
-                if (n->right == NULL) {
-                    n->right = inserted_node;
-                    break;
-                } else {
-                    n = n->right;
-                }
-            }
-        }
-        inserted_node->parent = n;
-    }
-    insert_case1(t, inserted_node);
-    verify_properties(t);
-    pthread_rwlock_unlock(&lock); // unlock tree
-}
-
 
 void insert_case1(rbtree t, node n) {
     if (n->parent == NULL)
